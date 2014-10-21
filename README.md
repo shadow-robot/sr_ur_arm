@@ -10,20 +10,17 @@ This repository is not needed if you have either a Shadow hand or UR robot by th
 
 ### sr_ur_program_loader
 
-connect with the socket to a server at the robot e.g. ("192.168.0.1", 30002)
+Connect with the socket to a server at the robot e.g. ("192.168.0.1", 30002). Then
 open a robot program file send it to the socket
 
 ### sr_ur_event_loop
-create a thread to run the loop in 
-create, run, stop, delete the event loop
+Create and run the event loop in a thread with real time priority. 
 
 ### sr_ur_read_write
-accept connection from the robot client
-send position commands and check response
+accept connection from the robot client and then send position commands and check response
 
 ### sr_ur_read_robot_state
-connect to the real time state server e.g. ("192.168.0.1", 30003)
-receive and unpack the robot state  
+connect to the real time state server e.g. ("192.168.0.1", 30003) and then receive and unpack the robot state  
 
 ### sr_ur_controller
 plug in controller for the controller loop in ros_ethercat
