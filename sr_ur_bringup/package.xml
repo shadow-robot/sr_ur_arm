@@ -1,0 +1,18 @@
+<package>
+  <name>sr_ur_bringup</name>
+  <version>0.1.0</version>
+  <description>launch files and robot programs</description>
+  <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
+
+  <license>LGPLv3</license>
+
+  <url type="website">http://ros.org/wiki/sr_ur_arm</url>
+  <url type="repository">https://github.com/shadow-robot/sr_ur_arm</url>
+  <url type="bugtracker">https://github.com/shadow-robot/sr_ur_arm/issues</url>
+
+  <author>Manos Nikoladis</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>ros_ethercat_loop</run_depend>
+  <run_depend>sr_ur_controller</run_depend>
+</package>

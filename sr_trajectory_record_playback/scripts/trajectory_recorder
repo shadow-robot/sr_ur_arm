@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+from rospy import init_node, is_shutdown, Duration, loginfo, Subscriber, Rate, Time
+from sensor_msgs.msg import JointState
+from sys import argv
+
+"""
+Records the trajectory of a single UR arm for future play back with trajectory_player
+It will create a file with given name or overwrite it if it exists
+example usage
+
+./trajectory_recorder my_trajectory.txt
+
+"""
+
+
+class SrUrTrajectoryRecorder(object):
+
+    def __init__(self):
+        init_node("TrajectoryRecorder", anonymous=True)
+        self.trajectory_file = open(argv[1], 'w')
+        self.joint_subscriber = Subscriber(
+            "/joint_states", JointState, self.joint_state_callback)
+        self.joint_space_coordinates = [0.0] * 6
+
+    def joint_state_callback(self, msg):
+        self.joint_space_coordinates = msg.position
+
+    def run(self):
+        rate = Rate(5)
+        time_zero = Time.now().to_sec()
+        loginfo("Recording started")
+        while not is_shutdown():
+            now = Time.now().to_sec()
+            line = "{0: 20.15f}, {1: 20.15f}, {2: 20.15f}, {3: 20.15f}, {4: 20.15f}, {5: 20.15f}, {6: 20.15f}\n".format(
+                now - time_zero,
+                self.joint_space_coordinates[0],
+                self.joint_space_coordinates[1],
+                self.joint_space_coordinates[2],
+                self.joint_space_coordinates[3],
+                self.joint_space_coordinates[4],
+                self.joint_space_coordinates[5])
+            if self.joint_space_coordinates != [0.0] * 6:
+                self.trajectory_file.write(line)
+            rate.sleep()
+
+
+if __name__ == '__main__':
+    trajectroy_recorder = SrUrTrajectoryRecorder()
+    trajectroy_recorder.run()
+    trajectroy_recorder.trajectory_file.close()
+    loginfo("Recording has finished")

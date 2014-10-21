@@ -1,0 +1,5 @@
+<library path="lib/libsr_ur_controller">
+  <class name="sr_ur_controller/UrArmController"
+         type="sr_ur::UrArmController"
+         base_class_type="controller_interface::ControllerBase" />
+</library>

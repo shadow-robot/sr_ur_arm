@@ -1,0 +1,55 @@
+def driverProg():
+  MSG_QUIT = 1
+  MSG_STOPJ = 3
+  MSG_SERVOJ = 5
+  MSG_SET_TEACH_MODE = 7
+  MULT = 10000.0
+  commanded_positions = get_actual_joint_positions()
+  thread servoThread():
+    while True:
+      enter_critical
+      q = commanded_positions
+      exit_critical
+      servoj(q, 0, 0, 0.008)
+    end
+  end
+  socket_open("%s", %d)
+  socket_send_string("Connected")
+  thread_servo = run servoThread()
+  while True:
+    telegram = socket_read_binary_integer(7)
+    if telegram[0] == 7:
+      msg_type = telegram[1]
+      if msg_type == MSG_QUIT:
+        socket_send_string("Quit")
+        break
+      elif msg_type == MSG_SERVOJ:
+        q = [telegram[2]/MULT,
+             telegram[3]/MULT,
+             telegram[4]/MULT,
+             telegram[5]/MULT,
+             telegram[6]/MULT,
+             telegram[7]/MULT]
+        enter_critical
+        commanded_positions = q
+        exit_critical
+      elif msg_type == MSG_STOPJ:
+        socket_send_string("Stop")
+        enter_critical
+        commanded_positions = get_actual_joint_positions()
+        exit_critical
+      elif msg_type == MSG_SET_TEACH_MODE:
+        socket_send_string("Teach mode")
+        if telegram[2] != 0:
+          teach_mode()
+        else:
+          end_teach_mode()
+        end
+      else:
+        socket_send_string("Error")
+      end
+    end
+  end
+  socket_close()
+end
+driverProg()
