@@ -29,20 +29,22 @@
 static uv_loop_t* event_loop;
 static pthread_t asynchronous_io_;
 
+// function for the thread that runs the event loop
 static void *asynchronous_io_loop(void *)
 {
-  // set maximum real time priority
+  // set maximum real time priority for this thread
   sched_param thread_param;
   int policy = SCHED_FIFO;
   thread_param.sched_priority = sched_get_priority_max(policy);
   pthread_setschedparam(pthread_self(), policy, &thread_param);
 
+  // run the loop
   uv_run_mode run_mode = UV_RUN_DEFAULT;
   uv_run(event_loop, run_mode);
   return NULL;
 }
 
-// returns the event loop or creates a new one
+// returns the event loop and creates a new one if needed
 uv_loop_t* get_event_loop()
 {
   if (!event_loop)
@@ -62,8 +64,8 @@ void start_event_loop()
   ROS_ASSERT(0 == thread_status);
 }
 
+// the event loop will actually terminate after pending callbacks return
 void stop_event_loop()
 {
   uv_stop(event_loop);
 }
-
