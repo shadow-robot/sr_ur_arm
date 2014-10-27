@@ -29,7 +29,7 @@
 #include <controller_interface/controller.h>
 #include <ros_ethercat_model/robot_state.hpp>
 #include <realtime_tools/realtime_publisher.h>
-#include <sr_ur_controller/sr_ur_common.hpp>
+#include "sr_ur_controller/sr_ur_common.hpp"
 
 namespace sr_ur
 {
@@ -46,15 +46,20 @@ public:
 protected:
   ros::NodeHandle node_;
 
-  /// prefix used for creating topics / services
-  std::string topic_prefix_;
-
   ros_ethercat_model::RobotState *robot_;
   ros_ethercat_model::JointState* joint_states_[NUM_OF_JOINTS];
 
+  // used for throttling loop at 8ms with master loop at 1ms
   int loop_count_;
 
-  std::string robot_id_, joint_prefix_;
+  // identify left or right arm
+  std::string robot_id_;
+
+  // left or right arm prefix for joints
+  std::string joint_prefix_;
+
+  // left or right arm prefix for topics / services
+  std::string topic_prefix_;
 
   virtual void setCommandCB(const std_msgs::Float64MultiArrayConstPtr& msg);
   ros::Subscriber sub_command_;
