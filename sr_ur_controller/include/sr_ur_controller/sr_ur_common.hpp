@@ -37,16 +37,25 @@ const char ur_joints[NUM_OF_JOINTS][sizeof("shoulder_lift_joint")] = {"shoulder_
                                                                       "wrist_2_joint",
                                                                       "wrist_3_joint"};
 
-extern double target_positions[NUM_OF_JOINTS]; // radians
+extern double target_positions[NUM_OF_JOINTS];           // radians
+
+// synchronize target_positions between controller and driver
 extern pthread_mutex_t write_mutex;
 
-extern double robot_joint_positions[NUM_OF_JOINTS]; // radians
-extern double robot_joint_velocities[NUM_OF_JOINTS]; // radians/sec
+extern double robot_joint_positions[NUM_OF_JOINTS];      // radians
+extern double robot_joint_velocities[NUM_OF_JOINTS];     // radians/sec
 extern double robot_joint_motor_currents[NUM_OF_JOINTS]; // Amperes
+
+// synchronize robot state between controller and driver
 extern pthread_mutex_t robot_state_mutex;
 
+// IP address of the robot
 extern char *robot_address;
+
+// IP address of host PC for the connection to the robot
 extern char *host_address;
+
+// path to a file containing a robot program
 extern char *robot_program_path;
 
 // when the controller is ready it should call this to start communication with the ur arm controller
