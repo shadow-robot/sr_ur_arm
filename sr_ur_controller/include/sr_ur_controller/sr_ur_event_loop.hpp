@@ -26,13 +26,13 @@
 
 #include <uv.h>
 
-// gets the event loop or NULL of it hasn't started
+// gets a pointer to the event loop and creates one if necessary
 uv_loop_t* get_event_loop();
 
-// start the event loop in a separate thread
+// start the event loop in a separate thread with real time scheduling policy
 void start_event_loop();
 
-// signals to stop the event loop that will happen after pending callbacks return
+// signals to stop the event loop something that will happen after pending callbacks return
 void stop_event_loop();
 
 #endif
