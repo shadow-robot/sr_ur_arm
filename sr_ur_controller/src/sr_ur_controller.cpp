@@ -42,10 +42,12 @@ bool UrArmController::init(ros_ethercat_model::RobotState* robot, ros::NodeHandl
 {
   ROS_ASSERT(robot);
   robot_ = robot;
-  node_ = n;
+  node_  = n;
 
   if (node_.getParam("robot_id", robot_id_) && (!robot_id_.empty()))
+  {
     joint_prefix_ = robot_id_ + '_';
+  }
 
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
@@ -56,7 +58,9 @@ bool UrArmController::init(ros_ethercat_model::RobotState* robot, ros::NodeHandl
       return false;
     }
     else
+    {
       ROS_INFO_STREAM("UrArmController added joint " << joint_prefix_ + ur_joints[i]);
+    }
     joint_states_[i]->calibrated_ = true;
   }
 
@@ -81,8 +85,8 @@ bool UrArmController::init(ros_ethercat_model::RobotState* robot, ros::NodeHandl
     return false;
   }
 
-  robot_address = strdup(robot_ip_address.c_str());
-  host_address = strdup(control_pc_ip_address.c_str());
+  robot_address      = strdup(robot_ip_address.c_str());
+  host_address       = strdup(control_pc_ip_address.c_str());
   robot_program_path = strdup(robot_program_path_param.c_str());
 
   return true;
@@ -112,13 +116,15 @@ void UrArmController::update(const ros::Time&, const ros::Duration& dt)
     {
       joint_states_[i]->position_ = robot_joint_positions[i];
       joint_states_[i]->velocity_ = robot_joint_velocities[i];
-      joint_states_[i]->effort_ = robot_joint_motor_currents[i];
+      joint_states_[i]->effort_   = robot_joint_motor_currents[i];
     }
     pthread_mutex_unlock(&robot_state_mutex);
 
     pthread_mutex_lock(&write_mutex);
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
+    {
       target_positions[i] = joint_states_[i]->commanded_position_;
+    }
     pthread_mutex_unlock(&write_mutex);
 
     send_command_to_robot();
@@ -130,6 +136,9 @@ void UrArmController::update(const ros::Time&, const ros::Duration& dt)
 void UrArmController::setCommandCB(const std_msgs::Float64MultiArrayConstPtr& msg)
 {
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
+  {
     joint_states_[i]->commanded_position_ = msg->data[i];
+  }
 }
+
 }
