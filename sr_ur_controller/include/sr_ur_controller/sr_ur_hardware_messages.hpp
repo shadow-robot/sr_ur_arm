@@ -25,30 +25,31 @@
 
 #include <stdint.h>
 
+// message to quit the current robot program
 struct ur_quit
 {
   int32_t message_type_;
 }__attribute__((packed));
 
+// message to (abruptly) stop the motion of the robot
 struct ur_stop
 {
   int32_t message_type_;
 }__attribute__((packed));
 
+// message to move the robot to a new waypoint in joint space
 struct ur_servoj
 {
   int32_t message_type_;
   int32_t commanded_positions_[NUM_OF_JOINTS];
 }__attribute__((packed));
 
+// message to set or reset the teach mode
 struct ur_set_teach_mode
 {
   int32_t message_type_;
   int32_t teach_mode_;
 }__attribute__((packed));
-
-// size needed to get up actual currents in ur_robot_state
-const size_t MIN_SIZE = (8*6+1)*sizeof(double) + sizeof(int32_t);
 
 // the contents of the telegram from the ur arm controller to the control PC
 struct ur_robot_state
