@@ -58,9 +58,6 @@ protected:
   // left or right arm prefix for joints
   std::string joint_prefix_;
 
-  // left or right arm prefix for topics / services
-  std::string topic_prefix_;
-
   virtual void setCommandCB(const std_msgs::Float64MultiArrayConstPtr& msg);
   ros::Subscriber sub_command_;
 };
