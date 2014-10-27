@@ -30,15 +30,15 @@
 
 #define ROS_ASSERT_ENABLED
 
-double robot_joint_positions[NUM_OF_JOINTS]; // rad
-double robot_joint_velocities[NUM_OF_JOINTS]; // rad/sec
-double robot_joint_motor_currents[NUM_OF_JOINTS]; // A
+double robot_joint_positions[NUM_OF_JOINTS];      // rad
+double robot_joint_velocities[NUM_OF_JOINTS];     // rad/sec
+double robot_joint_motor_currents[NUM_OF_JOINTS]; // Amperes
 pthread_mutex_t robot_state_mutex;
 
 static uv_connect_t robot_state_client_connection_request;
-static uv_tcp_t robot_state_stream;
-static uv_buf_t robot_state_buffer;
-static bool robot_state_received;
+static uv_tcp_t     robot_state_stream;
+static uv_buf_t     robot_state_buffer;
+static bool         robot_state_received;
 
 // reuse the preallocated buffer for storing the robot state data
 // that the server in the robot at port 30003 reports back
@@ -48,25 +48,28 @@ static uv_buf_t alloc_robot_state_buf(uv_handle_t* robot_state_stream_handle, si
   return robot_state_buffer;
 }
 
-// swap endianess of a double
+// swap the endianess of a double (64bit)
+// this is application specific as it is known that the host uses little
+// and the network big endian. It may not work in other systems.
 static double ntohd(double *big_endian_number)
 {
   double little_endian_number;
-  char *big_endian_data = (char*)big_endian_number;
+  char *big_endian_data    = (char*)big_endian_number;
   char *little_endian_data = (char*)&little_endian_number;
 
-  size_t len = sizeof(double);
-  for (size_t i = 0; i < len; ++i)
-    little_endian_data[i] = big_endian_data[len - i - 1];
-
+  size_t length = sizeof(double);
+  for (size_t i = 0; i < length; ++i)
+  {
+    little_endian_data[i] = big_endian_data[length - i - 1];
+  }
   return little_endian_number;
 }
 
 // parse the robot state telegram into the containers that the controller can access
 // this is called whenever the server in the robot at 30003 sends a telegram
 static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
-                                    ssize_t number_of_chars_received,
-                                    uv_buf_t in_robot_state_buffer)
+                                    ssize_t      number_of_chars_received,
+                                    uv_buf_t     in_robot_state_buffer)
 {
   ROS_ASSERT(p_robot_state_stream);
   ROS_ASSERT(in_robot_state_buffer.base);
@@ -85,8 +88,8 @@ static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
 
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
-    robot_joint_positions[i] = ntohd(&robot_state->actual_positions_[i]);
-    robot_joint_velocities[i] = ntohd(&robot_state->actual_velocities_[i]);
+    robot_joint_positions[i]      = ntohd(&robot_state->actual_positions_[i]);
+    robot_joint_velocities[i]     = ntohd(&robot_state->actual_velocities_[i]);
     robot_joint_motor_currents[i] = ntohd(&robot_state->actual_currents_[i]);
   }
   pthread_mutex_unlock(&robot_state_mutex);
@@ -100,7 +103,7 @@ static void robot_state_client_connected_cb(uv_connect_t* connection_request, in
   ROS_ASSERT(0 == status);
 
   robot_state_buffer.base = (char*)malloc(sizeof(ur_robot_state));
-  robot_state_buffer.len = sizeof(ur_robot_state);
+  robot_state_buffer.len  = sizeof(ur_robot_state);
 
   status = uv_read_start(connection_request->handle,
                          alloc_robot_state_buf,
