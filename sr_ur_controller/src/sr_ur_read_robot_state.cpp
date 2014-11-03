@@ -156,6 +156,6 @@ void start_communication_with_robot()
 
 void stop_communication_with_robot()
 {
-  ROS_INFO("UrArmController stops communication with robot");
+  ROS_INFO("UrArmController stops communicating with robot");
   stop_reading_robot_state();
 }
