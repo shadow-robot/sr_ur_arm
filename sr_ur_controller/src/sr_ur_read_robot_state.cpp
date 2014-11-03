@@ -75,13 +75,6 @@ static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
   ROS_ASSERT(in_robot_state_buffer.base);
   ROS_ASSERT(sizeof(ur_short_robot_state) <= number_of_chars_received);
 
-  if (!robot_state_received)
-  {
-    start_read_write();
-    robot_state_received = true;
-    ROS_INFO("UrArmController started receiving robot state");
-  }
-
   pthread_mutex_lock(&robot_state_mutex);
   ur_robot_state *robot_state = (ur_robot_state*)in_robot_state_buffer.base;
   ROS_ASSERT(sizeof(ur_short_robot_state) <= robot_state->message_size_);
@@ -91,8 +84,19 @@ static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
     robot_joint_positions[i]      = ntohd(&robot_state->actual_positions_[i]);
     robot_joint_velocities[i]     = ntohd(&robot_state->actual_velocities_[i]);
     robot_joint_motor_currents[i] = ntohd(&robot_state->actual_currents_[i]);
+    if (!robot_state_received)
+    {
+      target_positions[i] = robot_joint_positions[i];
+    }
   }
   pthread_mutex_unlock(&robot_state_mutex);
+
+  if (!robot_state_received)
+  {
+    start_read_write();
+    robot_state_received = true;
+    ROS_INFO("UrArmController started receiving robot state");
+  }
 }
 
 // a client in the host PC has successfully connected to a server in the robot at 30003
@@ -118,7 +122,7 @@ static void start_reading_robot_state()
   // initialise stream for client that receives robot state
   int status = uv_tcp_init(get_event_loop(), &robot_state_stream);
   ROS_ASSERT(0 == status);
-  uv_tcp_nodelay(&robot_state_stream, 1);
+  uv_tcp_nodelay(&robot_state_stream, 0);
 
   sockaddr_in robot_state_client_address = uv_ip4_addr(robot_address, 30003);
   status = uv_tcp_connect(&robot_state_client_connection_request,

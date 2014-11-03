@@ -56,7 +56,7 @@ static uv_tcp_t command_stream;
 static uv_buf_t command_buffer;
 static uv_buf_t response_to_command_buffer;
 
-static bool robot_ready_to_move;
+bool robot_ready_to_move;
 
 // reuse the preallocated buffer for storing the robot's response
 // when a command is send from the server in the host to the client in the robot
@@ -171,7 +171,7 @@ static void command_server_received_connection_cb(uv_stream_t* p_server_stream, 
 
   status = uv_tcp_init(get_event_loop(), &command_stream);
   ROS_ASSERT(0 == status);
-  uv_tcp_nodelay(&command_stream, 1);
+  uv_tcp_nodelay(&command_stream, 0);
 
   status = uv_accept(p_server_stream, (uv_stream_t*)&command_stream);
   ROS_ASSERT(0 == status);
@@ -194,7 +194,7 @@ void start_read_write()
   // a new stream will be created that will actually be used for the commands
   int status = uv_tcp_init(get_event_loop(), &server_stream);
   ROS_ASSERT(0 == status);
-  uv_tcp_nodelay(&server_stream, 1);
+  uv_tcp_nodelay(&server_stream, 0);
 
   sockaddr_in server_address = uv_ip4_addr(host_address, REVERSE_PORT);
   status = uv_tcp_bind(&server_stream, server_address);
@@ -230,13 +230,7 @@ void stop_read_write()
 
 void send_command_to_robot()
 {
-  if (!robot_ready_to_move)
-  {
-    return;
-  }
-
   ur_servoj *telegram = (ur_servoj*)command_buffer.base;
-  memset(telegram, 0, sizeof(ur_servoj));
   telegram->message_type_ = htonl(MSG_SERVOJ);
 
   pthread_mutex_lock(&write_mutex);

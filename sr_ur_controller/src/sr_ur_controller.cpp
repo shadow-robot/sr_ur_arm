@@ -107,9 +107,9 @@ void UrArmController::stopping(const ros::Time&)
   sub_command_.shutdown();
 }
 
-void UrArmController::update(const ros::Time&, const ros::Duration& dt)
+void UrArmController::update(const ros::Time&, const ros::Duration&)
 {
-  if (loop_count_++ > 8)
+  if (loop_count_++ > 16)
   {
     pthread_mutex_lock(&robot_state_mutex);
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
@@ -117,8 +117,17 @@ void UrArmController::update(const ros::Time&, const ros::Duration& dt)
       joint_states_[i]->position_ = robot_joint_positions[i];
       joint_states_[i]->velocity_ = robot_joint_velocities[i];
       joint_states_[i]->effort_   = robot_joint_motor_currents[i];
+      if (!robot_ready_to_move)
+      {
+        joint_states_[i]->commanded_position_ = target_positions[i];
+      }
     }
     pthread_mutex_unlock(&robot_state_mutex);
+
+    if (!robot_ready_to_move)
+    {
+      return;
+    }
 
     pthread_mutex_lock(&write_mutex);
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)

@@ -37,6 +37,8 @@ const char ur_joints[NUM_OF_JOINTS][sizeof("shoulder_lift_joint")] = {"shoulder_
                                                                       "wrist_2_joint",
                                                                       "wrist_3_joint"};
 
+extern bool robot_ready_to_move;
+
 extern double target_positions[NUM_OF_JOINTS];           // radians
 
 // synchronize target_positions between controller and driver

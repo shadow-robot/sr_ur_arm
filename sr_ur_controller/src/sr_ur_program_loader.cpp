@@ -181,5 +181,5 @@ void load_robot_program(int reverse_port)
   // initialise stream for client that writes a robot program
   int status = uv_tcp_init(get_event_loop(), &send_file_stream);
   ROS_ASSERT(0 == status);
-  uv_tcp_nodelay(&send_file_stream, 1);
+  uv_tcp_nodelay(&send_file_stream, 0);
 }
