@@ -73,7 +73,7 @@ static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
 {
   ROS_ASSERT(p_robot_state_stream);
   ROS_ASSERT(in_robot_state_buffer.base);
-  ROS_ASSERT(MIN_SIZE <= number_of_chars_received);
+  ROS_ASSERT(sizeof(ur_short_robot_state) <= number_of_chars_received);
 
   if (!robot_state_received)
   {
@@ -84,7 +84,7 @@ static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
 
   pthread_mutex_lock(&robot_state_mutex);
   ur_robot_state *robot_state = (ur_robot_state*)in_robot_state_buffer.base;
-  ROS_ASSERT(MIN_SIZE <= robot_state->message_size_);
+  ROS_ASSERT(sizeof(ur_short_robot_state) <= robot_state->message_size_);
 
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {

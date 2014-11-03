@@ -51,6 +51,19 @@ struct ur_set_teach_mode
   int32_t teach_mode_;
 }__attribute__((packed));
 
+struct ur_short_robot_state
+{
+  int32_t message_size_;
+  double time_;
+  double target_positions[NUM_OF_JOINTS];
+  double target_velocities_[NUM_OF_JOINTS];
+  double target_accelerations_[NUM_OF_JOINTS];
+  double target_currents_[NUM_OF_JOINTS];
+  double target_torques_[NUM_OF_JOINTS];
+  double actual_positions_[NUM_OF_JOINTS];
+  double actual_velocities_[NUM_OF_JOINTS];
+}__attribute__((packed));
+
 // the contents of the telegram from the ur arm controller to the control PC
 struct ur_robot_state
 {
