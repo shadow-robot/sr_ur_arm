@@ -21,10 +21,9 @@
  *      Author: Manos Nikolaidis
  */
 
+#define ROS_ASSERT_ENABLED
 #include <ros/ros.h>
 #include "sr_ur_controller/sr_ur_event_loop.hpp"
-
-#define ROS_ASSERT_ENABLED
 
 static uv_loop_t* event_loop;
 static pthread_t asynchronous_io_;

@@ -21,26 +21,23 @@
  *      Author: Manos Nikolaidis
  */
 
+#define ROS_ASSERT_ENABLED
+#include <ros/ros.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <uv.h>
-#include <ros/assert.h>
-#include <rosconsole/macros_generated.h>
 #include "sr_ur_controller/sr_ur_common.hpp"
 #include "sr_ur_controller/sr_ur_event_loop.hpp"
 #include "sr_ur_controller/sr_ur_hardware_messages.hpp"
 #include "sr_ur_controller/sr_ur_program_loader.hpp"
 
-#define ROS_ASSERT_ENABLED
-
 const int32_t MSG_QUIT           = 1;
 const int32_t MSG_STOPJ          = 3;
 const int32_t MSG_SERVOJ         = 5;
 const int32_t MSG_SET_TEACH_MODE = 7;
-const double MULT_JOINTSTATE     = 10000.0;
-const int REVERSE_PORT           = 50001;
+const double  MULT_JOINTSTATE    = 10000.0;
 
 double target_positions[NUM_OF_JOINTS]; // rad
 pthread_mutex_t write_mutex;
@@ -50,11 +47,11 @@ char *host_address;
 
 static uv_write_t command_write_request;
 
-static uv_tcp_t server_stream;
-static uv_tcp_t command_stream;
+static uv_tcp_t   server_stream;
+static uv_tcp_t   command_stream;
 
-static uv_buf_t command_buffer;
-static uv_buf_t response_to_command_buffer;
+static uv_buf_t   command_buffer;
+static uv_buf_t   response_to_command_buffer;
 
 bool robot_ready_to_move;
 
@@ -160,7 +157,7 @@ static void command_server_received_connection_cb(uv_stream_t* p_server_stream, 
 {
   ROS_INFO("Received connection from robot");
   ROS_ASSERT(p_server_stream);
-  ROS_ASSERT(p_server_stream == &server_stream);
+  ROS_ASSERT(p_server_stream == (uv_stream_t*)&server_stream);
   ROS_ASSERT(0 == status);
 
   command_buffer.base = (char*)malloc(sizeof(ur_servoj));
@@ -186,7 +183,6 @@ static void command_server_received_connection_cb(uv_stream_t* p_server_stream, 
 
 void start_read_write()
 {
-  ROS_INFO("UrArmController starts read and write");
   pthread_mutex_init(&write_mutex, NULL);
 
   // Initialise stream for server that sends commands to the robot.
@@ -196,15 +192,26 @@ void start_read_write()
   ROS_ASSERT(0 == status);
   uv_tcp_nodelay(&server_stream, 0);
 
-  sockaddr_in server_address = uv_ip4_addr(host_address, REVERSE_PORT);
+  // assign port to zero and let the OS select an available one
+  sockaddr_in server_address = uv_ip4_addr(host_address, 0);
   status = uv_tcp_bind(&server_stream, server_address);
   ROS_ASSERT(0 == status);
 
+  // get the port that the OS assigned
+  int length;
+  sockaddr address_with_bound_port;
+  status = uv_tcp_getsockname(&server_stream, &address_with_bound_port, &length);
+  ROS_ASSERT(0 == status);
+  int reverse_port = ntohs(((struct sockaddr_in*)&address_with_bound_port)->sin_port);
+
   status = uv_listen((uv_stream_t*)&server_stream, 1, command_server_received_connection_cb);
+  ROS_ASSERT(0 == status);
+  ROS_WARN("UrArmController started server on address %s and listening on port %d",
+           host_address, reverse_port);
 
   // after the robot program is loaded and has started running
   // it will attempt to connect on server_stream
-  load_robot_program(REVERSE_PORT);
+  load_robot_program(reverse_port);
 
   ROS_ASSERT(0 == status);
 }

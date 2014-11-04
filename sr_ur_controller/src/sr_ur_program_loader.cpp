@@ -22,13 +22,12 @@
  *      Author: Manos Nikolaidis
  */
 
+#define ROS_ASSERT_ENABLED
 #include <ros/ros.h>
 #include "sr_ur_controller/sr_ur_event_loop.hpp"
 #include "sr_ur_controller/sr_ur_common.hpp"
 #include "sr_ur_controller/sr_ur_program_loader.hpp"
 #include <sr_ur_controller/sr_ur_read_write.hpp>
-
-#define ROS_ASSERT_ENABLED
 
 char *robot_program_path;
 
@@ -50,7 +49,7 @@ static void load_file_from_disk();
 static void file_sent_cb(uv_write_t* send_file_request, int status)
 {
   ROS_ASSERT(send_file_request);
-  ROS_ASSERT(send_file_request == &file_request);
+  ROS_ASSERT(send_file_request == (uv_write_t*)&file_request);
   ROS_ASSERT(0 == status);
 
   if (!main_program_currently)

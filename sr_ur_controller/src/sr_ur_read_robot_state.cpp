@@ -22,13 +22,12 @@
  *      Author: Manos Nikolaidis
  */
 
+#define ROS_ASSERT_ENABLED
 #include <ros/ros.h>
 #include "sr_ur_controller/sr_ur_event_loop.hpp"
 #include "sr_ur_controller/sr_ur_common.hpp"
 #include "sr_ur_controller/sr_ur_hardware_messages.hpp"
 #include "sr_ur_controller/sr_ur_read_write.hpp"
-
-#define ROS_ASSERT_ENABLED
 
 double robot_joint_positions[NUM_OF_JOINTS];      // rad
 double robot_joint_velocities[NUM_OF_JOINTS];     // rad/sec
@@ -39,6 +38,8 @@ static uv_connect_t robot_state_client_connection_request;
 static uv_tcp_t     robot_state_stream;
 static uv_buf_t     robot_state_buffer;
 static bool         robot_state_received;
+
+const int ROBOT_STATE_PORT = 30003;
 
 // reuse the preallocated buffer for storing the robot state data
 // that the server in the robot at port 30003 reports back
@@ -95,11 +96,12 @@ static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
   {
     start_read_write();
     robot_state_received = true;
-    ROS_INFO("UrArmController started receiving robot state");
+    ROS_WARN("UrArmController started receiving robot state from address %s and port %d",
+             robot_address, ROBOT_STATE_PORT);
   }
 }
 
-// a client in the host PC has successfully connected to a server in the robot at 30003
+// a client in the host PC has successfully connected to a server in the robot at ROBOT_STATE_PORT
 // to receive the robot state every 8ms
 static void robot_state_client_connected_cb(uv_connect_t* connection_request, int status)
 {
@@ -124,7 +126,7 @@ static void start_reading_robot_state()
   ROS_ASSERT(0 == status);
   uv_tcp_nodelay(&robot_state_stream, 0);
 
-  sockaddr_in robot_state_client_address = uv_ip4_addr(robot_address, 30003);
+  sockaddr_in robot_state_client_address = uv_ip4_addr(robot_address, ROBOT_STATE_PORT);
   status = uv_tcp_connect(&robot_state_client_connection_request,
                           &robot_state_stream,
                           robot_state_client_address,
