@@ -58,6 +58,8 @@ protected:
   // left or right arm prefix for joints
   std::string joint_prefix_;
 
+  UrRobotData ur_;
+
   virtual void setCommandCB(const std_msgs::Float64MultiArrayConstPtr& msg);
   ros::Subscriber sub_command_;
 };

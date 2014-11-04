@@ -22,7 +22,7 @@
  */
 
 #define ROS_ASSERT_ENABLED
-#include <ros/ros.h>
+#include <ros/assert.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,12 +39,6 @@ const int32_t MSG_SERVOJ         = 5;
 const int32_t MSG_SET_TEACH_MODE = 7;
 const double  MULT_JOINTSTATE    = 10000.0;
 
-double target_positions[NUM_OF_JOINTS]; // rad
-pthread_mutex_t write_mutex;
-
-char *robot_address;
-char *host_address;
-
 static uv_write_t command_write_request;
 
 static uv_tcp_t   server_stream;
@@ -52,8 +46,6 @@ static uv_tcp_t   command_stream;
 
 static uv_buf_t   command_buffer;
 static uv_buf_t   response_to_command_buffer;
-
-bool robot_ready_to_move;
 
 // reuse the preallocated buffer for storing the robot's response
 // when a command is send from the server in the host to the client in the robot
@@ -128,6 +120,9 @@ static void received_response_to_command_cb(uv_stream_t* p_command_stream,
                                             uv_buf_t     in_response_to_command_buffer)
 {
   ROS_ASSERT(p_command_stream);
+  ROS_ASSERT(p_command_stream->data);
+  UrRobotData *ur = (UrRobotData*) p_command_stream->data;
+
   ROS_ASSERT(in_response_to_command_buffer.base);
 
   in_response_to_command_buffer.base[number_of_chars_received] = '\0';
@@ -139,15 +134,15 @@ static void received_response_to_command_cb(uv_stream_t* p_command_stream,
     ROS_INFO("Asking the robot to stop");
     send_ur_stop();
   }
-  else if (!robot_ready_to_move && strcmp(in_response_to_command_buffer.base, "Stop") == 0)
+  else if (!ur->robot_ready_to_move && strcmp(in_response_to_command_buffer.base, "Stop") == 0)
   {
     ROS_INFO("Asking to reset the teach mode");
     send_ur_set_teach_mode(false);
   }
-  else if (!robot_ready_to_move && strcmp(in_response_to_command_buffer.base, "Teach mode") == 0)
+  else if (!ur->robot_ready_to_move && strcmp(in_response_to_command_buffer.base, "Teach mode") == 0)
   {
     ROS_INFO("Robot is ready to receive servo commands");
-    robot_ready_to_move = true;
+    ur->robot_ready_to_move = true;
   }
 }
 
@@ -173,6 +168,7 @@ static void command_server_received_connection_cb(uv_stream_t* p_server_stream, 
   status = uv_accept(p_server_stream, (uv_stream_t*)&command_stream);
   ROS_ASSERT(0 == status);
 
+  command_stream.data = server_stream.data;
   status = uv_read_start((uv_stream_t*)&command_stream,
                          alloc_response_to_command_buf,
                          received_response_to_command_cb);
@@ -181,9 +177,9 @@ static void command_server_received_connection_cb(uv_stream_t* p_server_stream, 
   ROS_INFO("Robot controller successfully connected to the host");
 }
 
-void start_read_write()
+void start_read_write(UrRobotData* ur)
 {
-  pthread_mutex_init(&write_mutex, NULL);
+  pthread_mutex_init(&ur->write_mutex, NULL);
 
   // Initialise stream for server that sends commands to the robot.
   // After this server accepts a connection from a client in the robot
@@ -192,8 +188,10 @@ void start_read_write()
   ROS_ASSERT(0 == status);
   uv_tcp_nodelay(&server_stream, 0);
 
+  server_stream.data = (void*) ur;
+
   // assign port to zero and let the OS select an available one
-  sockaddr_in server_address = uv_ip4_addr(host_address, 0);
+  sockaddr_in server_address = uv_ip4_addr(ur->host_address, 0);
   status = uv_tcp_bind(&server_stream, server_address);
   ROS_ASSERT(0 == status);
 
@@ -207,7 +205,7 @@ void start_read_write()
   status = uv_listen((uv_stream_t*)&server_stream, 1, command_server_received_connection_cb);
   ROS_ASSERT(0 == status);
   ROS_WARN("UrArmController started server on address %s and listening on port %d",
-           host_address, reverse_port);
+           ur->host_address, reverse_port);
 
   // after the robot program is loaded and has started running
   // it will attempt to connect on server_stream
@@ -216,13 +214,13 @@ void start_read_write()
   ROS_ASSERT(0 == status);
 }
 
-void stop_read_write()
+void stop_read_write(UrRobotData* ur)
 {
   ROS_INFO("UrArmController stops read and write");
   send_ur_stop();
   send_ur_quit();
 
-  pthread_mutex_destroy(&write_mutex);
+  pthread_mutex_destroy(&ur->write_mutex);
 
   uv_close((uv_handle_t*)&server_stream, NULL);
   uv_close((uv_handle_t*)&command_stream, NULL);
@@ -231,21 +229,21 @@ void stop_read_write()
 
   free(command_buffer.base);
   free(response_to_command_buffer.base);
-  free(robot_address);
-  free(host_address);
+  free(ur->robot_address);
+  free(ur->host_address);
 }
 
-void send_command_to_robot()
+void send_command_to_robot(UrRobotData* ur)
 {
   ur_servoj *telegram = (ur_servoj*)command_buffer.base;
   telegram->message_type_ = htonl(MSG_SERVOJ);
 
-  pthread_mutex_lock(&write_mutex);
+  pthread_mutex_lock(&ur->write_mutex);
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
-    telegram->commanded_positions_[i] = htonl((int32_t)(MULT_JOINTSTATE * target_positions[i]));
+    telegram->commanded_positions_[i] = htonl((int32_t)(MULT_JOINTSTATE * ur->target_positions[i]));
   }
-  pthread_mutex_unlock(&write_mutex);
+  pthread_mutex_unlock(&ur->write_mutex);
 
   int status = uv_write(&command_write_request,
                         (uv_stream_t*)&command_stream,

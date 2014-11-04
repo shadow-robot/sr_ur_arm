@@ -85,9 +85,9 @@ bool UrArmController::init(ros_ethercat_model::RobotState* robot, ros::NodeHandl
     return false;
   }
 
-  robot_address      = strdup(robot_ip_address.c_str());
-  host_address       = strdup(control_pc_ip_address.c_str());
-  robot_program_path = strdup(robot_program_path_param.c_str());
+  ur_.robot_address      = strdup(robot_ip_address.c_str());
+  ur_.host_address       = strdup(control_pc_ip_address.c_str());
+  ur_.robot_program_path = strdup(robot_program_path_param.c_str());
 
   return true;
 }
@@ -98,12 +98,12 @@ void UrArmController::starting(const ros::Time&)
                                                               1,
                                                               &UrArmController::setCommandCB,
                                                               this);
-  start_communication_with_robot();
+  start_communication_with_robot(&ur_);
 }
 
 void UrArmController::stopping(const ros::Time&)
 {
-  stop_communication_with_robot();
+  stop_communication_with_robot(&ur_);
   sub_command_.shutdown();
 }
 
@@ -111,32 +111,32 @@ void UrArmController::update(const ros::Time&, const ros::Duration&)
 {
   if (loop_count_++ > 16)
   {
-    pthread_mutex_lock(&robot_state_mutex);
+    pthread_mutex_lock(&ur_.robot_state_mutex);
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
     {
-      joint_states_[i]->position_ = robot_joint_positions[i];
-      joint_states_[i]->velocity_ = robot_joint_velocities[i];
-      joint_states_[i]->effort_   = robot_joint_motor_currents[i];
-      if (!robot_ready_to_move)
+      joint_states_[i]->position_ = ur_.joint_positions[i];
+      joint_states_[i]->velocity_ = ur_.joint_velocities[i];
+      joint_states_[i]->effort_   = ur_.joint_motor_currents[i];
+      if (!ur_.robot_ready_to_move)
       {
-        joint_states_[i]->commanded_position_ = target_positions[i];
+        joint_states_[i]->commanded_position_ = ur_.target_positions[i];
       }
     }
-    pthread_mutex_unlock(&robot_state_mutex);
+    pthread_mutex_unlock(&ur_.robot_state_mutex);
 
-    if (!robot_ready_to_move)
+    if (!ur_.robot_ready_to_move)
     {
       return;
     }
 
-    pthread_mutex_lock(&write_mutex);
+    pthread_mutex_lock(&ur_.write_mutex);
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
     {
-      target_positions[i] = joint_states_[i]->commanded_position_;
+      ur_.target_positions[i] = joint_states_[i]->commanded_position_;
     }
-    pthread_mutex_unlock(&write_mutex);
+    pthread_mutex_unlock(&ur_.write_mutex);
 
-    send_command_to_robot();
+    send_command_to_robot(&ur_);
 
     loop_count_ = 0;
   }

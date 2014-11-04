@@ -23,13 +23,11 @@
  */
 
 #define ROS_ASSERT_ENABLED
-#include <ros/ros.h>
+#include <ros/assert.h>
 #include "sr_ur_controller/sr_ur_event_loop.hpp"
 #include "sr_ur_controller/sr_ur_common.hpp"
 #include "sr_ur_controller/sr_ur_program_loader.hpp"
 #include <sr_ur_controller/sr_ur_read_write.hpp>
-
-char *robot_program_path;
 
 static uv_connect_t connect_to_robot_request;
 static uv_write_t   send_file_request;
@@ -43,25 +41,28 @@ static bool main_program_currently;
 // host server will listen on this port for the robot client to connect
 static int host_port;
 
-static void load_file_from_disk();
+static void load_file_from_disk(UrRobotData* ur);
 
 // this is called after the robot program has been sent
 static void file_sent_cb(uv_write_t* send_file_request, int status)
 {
+  ROS_ASSERT(0 == status);
   ROS_ASSERT(send_file_request);
   ROS_ASSERT(send_file_request == (uv_write_t*)&file_request);
-  ROS_ASSERT(0 == status);
+
+  ROS_ASSERT(file_request.data);
+  UrRobotData *ur = (UrRobotData*) file_request.data;
 
   if (!main_program_currently)
   {
     main_program_currently = true;
-    load_file_from_disk();
+    load_file_from_disk(ur);
   }
   else
   {
     uv_fs_req_cleanup(&file_request);
     uv_close((uv_handle_t*)&send_file_stream, NULL);
-    free(robot_program_path);
+    free(ur->robot_program_path);
     free(file_path);
     free(file_buffer.base);
     ROS_INFO("UrArmController finished sending robot program");
@@ -76,8 +77,11 @@ static void prepare_file_buffer()
     return;
   }
 
+  ROS_ASSERT(file_request.data);
+  UrRobotData *ur = (UrRobotData*) file_request.data;
+
   char *temp_buffer;
-  size_t allocated_size = asprintf(&temp_buffer, file_buffer.base, host_address, host_port);
+  size_t allocated_size = asprintf(&temp_buffer, file_buffer.base, ur->host_address, host_port);
   ROS_ASSERT(allocated_size > 0);
 
   free(file_buffer.base);
@@ -94,6 +98,10 @@ static void client_connected_cb(uv_connect_t* connection_request, int status)
 {
   ROS_ASSERT(connection_request);
   ROS_ASSERT(connection_request == &connect_to_robot_request);
+
+  ROS_ASSERT(file_request.data);
+  UrRobotData *ur = (UrRobotData*) file_request.data;
+
   ROS_ASSERT(0 == status);
 
   prepare_file_buffer();
@@ -111,8 +119,12 @@ static void client_connected_cb(uv_connect_t* connection_request, int status)
 static void file_loaded_cb(uv_fs_t *load_file_request)
 {
   ROS_ASSERT(load_file_request);
+
+  ROS_ASSERT(file_request.data);
+  UrRobotData *ur = (UrRobotData*) file_request.data;
+
   ROS_ASSERT(load_file_request == &file_request);
-  sockaddr_in server_address = uv_ip4_addr(robot_address, 30002);
+  sockaddr_in server_address = uv_ip4_addr(ur->robot_address, 30002);
   int status = uv_tcp_connect(&connect_to_robot_request,
                               &send_file_stream,
                               server_address,
@@ -140,13 +152,13 @@ static void file_opened_cb(uv_fs_t *open_file_request)
 }
 
 // load disk file containing robot program
-static void load_file_from_disk()
+static void load_file_from_disk(UrRobotData* ur)
 {
   // the main program is ur_robot_program that is doing the actual work
   // but ur_reset_program must be sent before that 
   const char *file_name = main_program_currently ? "ur_robot_program" : "ur_reset_program";
   free(file_path);
-  int status = asprintf(&file_path, "%s%s", robot_program_path, file_name);
+  int status = asprintf(&file_path, "%s%s", ur->robot_program_path, file_name);
   ROS_ASSERT(status > 0);
 
   // allocate buffer according to file size
@@ -162,6 +174,8 @@ static void load_file_from_disk()
 
   ROS_INFO("UrArmController loading robot program file %s with size %zu", file_path, file_size);
 
+  file_request.data = (void*)ur;
+
   status = uv_fs_open(get_event_loop(),
                       &file_request,
                       file_path,
@@ -172,10 +186,10 @@ static void load_file_from_disk()
 }
 
 // load first a reset and then a main robot program to the robot
-void load_robot_program(int reverse_port)
+void load_robot_program(int reverse_port, UrRobotData* ur)
 {
   host_port = reverse_port;
-  load_file_from_disk();
+  load_file_from_disk(ur);
 
   // initialise stream for client that writes a robot program
   int status = uv_tcp_init(get_event_loop(), &send_file_stream);
