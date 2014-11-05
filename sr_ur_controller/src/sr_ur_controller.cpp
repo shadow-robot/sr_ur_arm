@@ -34,7 +34,7 @@ using namespace std;
 namespace sr_ur
 {
 UrArmController::UrArmController() :
-    robot_(NULL), loop_count_(0)
+    robot_(NULL), loop_count_(0), ur_()
 {
 }
 

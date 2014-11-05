@@ -59,8 +59,8 @@ static uv_buf_t alloc_response_to_command_buf(uv_handle_t* command_stream_handle
 // it just checks the status
 static void command_sent_cb(uv_write_t* p_command_write_request, int status)
 {
-  ROS_ASSERT(p_command_write_request);
   ROS_ASSERT(0 == status);
+  ROS_ASSERT(p_command_write_request);
 }
 
 // send a command to the robot to quit the currently running program
@@ -150,10 +150,10 @@ static void received_response_to_command_cb(uv_stream_t* p_command_stream,
 // commands can be send to the robot through this connection
 static void command_server_received_connection_cb(uv_stream_t* p_server_stream, int status)
 {
-  ROS_INFO("Received connection from robot");
+
   ROS_ASSERT(p_server_stream);
   ROS_ASSERT(p_server_stream == (uv_stream_t*)&server_stream);
-  ROS_ASSERT(0 == status);
+  ROS_INFO("Received connection from robot");
 
   command_buffer.base = (char*)malloc(sizeof(ur_servoj));
   command_buffer.len  = sizeof(ur_servoj);
@@ -196,8 +196,8 @@ void start_read_write(UrRobotData* ur)
   ROS_ASSERT(0 == status);
 
   // get the port that the OS assigned
-  int length;
   sockaddr address_with_bound_port;
+  int length = (int) sizeof(sockaddr);
   status = uv_tcp_getsockname(&server_stream, &address_with_bound_port, &length);
   ROS_ASSERT(0 == status);
   int reverse_port = ntohs(((struct sockaddr_in*)&address_with_bound_port)->sin_port);
@@ -209,7 +209,7 @@ void start_read_write(UrRobotData* ur)
 
   // after the robot program is loaded and has started running
   // it will attempt to connect on server_stream
-  load_robot_program(reverse_port);
+  load_robot_program(reverse_port, ur);
 
   ROS_ASSERT(0 == status);
 }

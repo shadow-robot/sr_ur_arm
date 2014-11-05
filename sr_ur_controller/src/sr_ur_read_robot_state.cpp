@@ -72,11 +72,11 @@ static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
   UrRobotData *ur = (UrRobotData*) p_robot_state_stream->data;
 
   ROS_ASSERT(in_robot_state_buffer.base);
-  ROS_ASSERT(sizeof(ur_short_robot_state) <= number_of_chars_received);
+  //ROS_ASSERT(sizeof(ur_short_robot_state) <= number_of_chars_received);
 
   pthread_mutex_lock(&ur->robot_state_mutex);
   ur_robot_state *robot_state = (ur_robot_state*)in_robot_state_buffer.base;
-  ROS_ASSERT(sizeof(ur_short_robot_state) <= robot_state->message_size_);
+  //ROS_ASSERT(sizeof(ur_short_robot_state) <= robot_state->message_size_);
 
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
@@ -92,7 +92,7 @@ static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
 
   if (!robot_state_received)
   {
-    start_read_write();
+    start_read_write(ur);
     robot_state_received = true;
     ROS_WARN("UrArmController started receiving robot state from address %s and port %d",
              ur->robot_address, ROBOT_STATE_PORT);
@@ -103,8 +103,8 @@ static void robot_state_received_cb(uv_stream_t* p_robot_state_stream,
 // to receive the robot state every 8ms
 static void robot_state_client_connected_cb(uv_connect_t* connection_request, int status)
 {
-  ROS_ASSERT(connection_request == &robot_state_client_connection_request);
   ROS_ASSERT(0 == status);
+  ROS_ASSERT(connection_request == &robot_state_client_connection_request);
 
   robot_state_buffer.base = (char*)malloc(sizeof(ur_robot_state));
   robot_state_buffer.len  = sizeof(ur_robot_state);
@@ -138,7 +138,7 @@ static void stop_reading_robot_state(UrRobotData* ur)
   pthread_mutex_destroy(&ur->robot_state_mutex);
   uv_close((uv_handle_t*)&robot_state_stream, NULL);
   free(robot_state_buffer.base);
-  stop_read_write();
+  stop_read_write(ur);
 }
 
 // The robot controller calls this to start communication with the robot controller.
@@ -148,7 +148,7 @@ static void stop_reading_robot_state(UrRobotData* ur)
 // 2. Start a server on the host to send commands to the robot and read responses
 // 3. Connect to a server on the robot and send the robot program
 // 4. The robot program will connect to the server on the host started before
-// 5. After that ur->robot_ready_to_move will be set to true and the controller will be able to send commands
+// 5. After that robot_ready_to_move will be set to true and the controller will be able to send commands
 void start_communication_with_robot(UrRobotData* ur)
 {
   ROS_INFO("UrArmController starts communication with robot");

@@ -44,11 +44,11 @@ static int host_port;
 static void load_file_from_disk(UrRobotData* ur);
 
 // this is called after the robot program has been sent
-static void file_sent_cb(uv_write_t* send_file_request, int status)
+static void file_sent_cb(uv_write_t* this_file_request, int status)
 {
   ROS_ASSERT(0 == status);
-  ROS_ASSERT(send_file_request);
-  ROS_ASSERT(send_file_request == (uv_write_t*)&file_request);
+  ROS_ASSERT(this_file_request);
+  ROS_ASSERT(this_file_request == &send_file_request);
 
   ROS_ASSERT(file_request.data);
   UrRobotData *ur = (UrRobotData*) file_request.data;
@@ -87,7 +87,7 @@ static void prepare_file_buffer()
   free(file_buffer.base);
   allocated_size = asprintf(&file_buffer.base, "%s", temp_buffer);
   free(temp_buffer);
-  
+
   ROS_ASSERT(allocated_size > 0);
   file_buffer.len = allocated_size;
 }
@@ -96,13 +96,12 @@ static void prepare_file_buffer()
 // so start sending the program
 static void client_connected_cb(uv_connect_t* connection_request, int status)
 {
+  ROS_ASSERT(0 == status);
   ROS_ASSERT(connection_request);
   ROS_ASSERT(connection_request == &connect_to_robot_request);
 
   ROS_ASSERT(file_request.data);
   UrRobotData *ur = (UrRobotData*) file_request.data;
-
-  ROS_ASSERT(0 == status);
 
   prepare_file_buffer();
 
@@ -119,11 +118,11 @@ static void client_connected_cb(uv_connect_t* connection_request, int status)
 static void file_loaded_cb(uv_fs_t *load_file_request)
 {
   ROS_ASSERT(load_file_request);
+  ROS_ASSERT(load_file_request == &file_request);
 
   ROS_ASSERT(file_request.data);
   UrRobotData *ur = (UrRobotData*) file_request.data;
 
-  ROS_ASSERT(load_file_request == &file_request);
   sockaddr_in server_address = uv_ip4_addr(ur->robot_address, 30002);
   int status = uv_tcp_connect(&connect_to_robot_request,
                               &send_file_stream,
@@ -155,7 +154,7 @@ static void file_opened_cb(uv_fs_t *open_file_request)
 static void load_file_from_disk(UrRobotData* ur)
 {
   // the main program is ur_robot_program that is doing the actual work
-  // but ur_reset_program must be sent before that 
+  // but ur_reset_program must be sent before that
   const char *file_name = main_program_currently ? "ur_robot_program" : "ur_reset_program";
   free(file_path);
   int status = asprintf(&file_path, "%s%s", ur->robot_program_path, file_name);
@@ -168,7 +167,7 @@ static void load_file_from_disk(UrRobotData* ur)
   {
     file_size = st.st_size;
   }
-  
+
   file_buffer.base = (char*)realloc((void*)file_buffer.base, file_size);
   file_buffer.len = file_size;
 

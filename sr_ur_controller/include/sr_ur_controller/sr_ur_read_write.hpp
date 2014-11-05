@@ -25,7 +25,7 @@
 #ifndef SR_UR_READ_WRITE_HPP_
 #define SR_UR_READ_WRITE_HPP_
 
-void start_read_write();
-void stop_read_write();
+void start_read_write(UrRobotData* ur);
+void stop_read_write(UrRobotData* ur);
 
 #endif

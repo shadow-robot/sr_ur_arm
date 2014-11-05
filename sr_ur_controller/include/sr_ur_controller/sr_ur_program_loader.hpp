@@ -25,6 +25,6 @@
 #ifndef SR_UR_PROGRAM_LOADER_HPP_
 #define SR_UR_PROGRAM_LOADER_HPP_
 
-void load_robot_program(int reverse_port);
+void load_robot_program(int reverse_port, UrRobotData* ur);
 
 #endif
