@@ -29,7 +29,7 @@
 #include <controller_interface/controller.h>
 #include <ros_ethercat_model/robot_state.hpp>
 #include <realtime_tools/realtime_publisher.h>
-#include "sr_ur_controller/sr_ur_common.hpp"
+#include <sr_ur_controller/sr_ur_driver.hpp>
 
 namespace sr_ur
 {
@@ -58,7 +58,7 @@ protected:
   // left or right arm prefix for joints
   std::string joint_prefix_;
 
-  UrRobotData ur_;
+  UrRobotDriver ur_;
 
   virtual void setCommandCB(const std_msgs::Float64MultiArrayConstPtr& msg);
   ros::Subscriber sub_command_;

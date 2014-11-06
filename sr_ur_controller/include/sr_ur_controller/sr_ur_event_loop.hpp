@@ -26,8 +26,15 @@
 
 #include <uv.h>
 
-uv_loop_t* get_event_loop();
-void start_event_loop();
-void stop_event_loop();
+struct UrEventLoop
+{
+  uv_loop_t* event_loop_;
+  pthread_t asynchronous_io_;
+
+  uv_loop_t* get_event_loop();
+  void start();
+  void stop();
+};
+
 
 #endif

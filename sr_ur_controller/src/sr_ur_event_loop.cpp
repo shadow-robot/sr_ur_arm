@@ -25,46 +25,52 @@
 #include <ros/assert.h>
 #include "sr_ur_controller/sr_ur_event_loop.hpp"
 
-static uv_loop_t* event_loop;
-static pthread_t asynchronous_io_;
-
 // function for the thread that runs the event loop
-static void *asynchronous_io_loop(void *)
+static void *asynchronous_io_loop(void *data)
 {
-  // set maximum real time priority for this thread
-  sched_param thread_param;
-  int policy = SCHED_FIFO;
-  thread_param.sched_priority = sched_get_priority_max(policy);
-  pthread_setschedparam(pthread_self(), policy, &thread_param);
+  UrEventLoop* el = (UrEventLoop*) data;
 
   // run the loop
   uv_run_mode run_mode = UV_RUN_DEFAULT;
-  uv_run(event_loop, run_mode);
+  uv_run(el->event_loop_, run_mode);
   return NULL;
 }
 
 // returns the event loop and creates a new one if needed
-uv_loop_t* get_event_loop()
+uv_loop_t* UrEventLoop::get_event_loop()
 {
-  if (!event_loop)
+  if (!event_loop_)
   {
     ROS_INFO("UrArmController started a new event loop");
-    event_loop = uv_loop_new();
+    event_loop_ = uv_loop_new();
   }
-  ROS_ASSERT(event_loop);
-  return event_loop;
+  ROS_ASSERT(event_loop_);
+  return event_loop_;
 }
 
 // event loop should be started after get_event_loop has been called
 // and at least one callback has been registered with the event loop
-void start_event_loop()
+void UrEventLoop::start()
 {
-  int thread_status = pthread_create(&asynchronous_io_, NULL, asynchronous_io_loop, event_loop);
-  ROS_ASSERT(0 == thread_status);
+  pthread_attr_t attr;
+  int status = pthread_attr_init(&attr);
+  ROS_ASSERT(0 == status);
+
+  sched_param thread_param;
+  int policy = SCHED_FIFO;
+  thread_param.sched_priority = sched_get_priority_max(policy);
+  status = pthread_attr_setschedparam(&attr, &thread_param);
+  ROS_ASSERT(0 == status);
+
+  status = pthread_create(&asynchronous_io_, NULL, asynchronous_io_loop, this);
+  ROS_ASSERT(0 == status);
+
+  status = pthread_attr_destroy(&attr);
+  ROS_ASSERT(0 == status);
 }
 
 // the event loop will actually terminate after pending callbacks return
-void stop_event_loop()
+void UrEventLoop::stop()
 {
-  uv_stop(event_loop);
+  uv_stop(event_loop_);
 }

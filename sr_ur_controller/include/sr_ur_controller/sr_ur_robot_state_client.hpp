@@ -16,37 +16,29 @@
  */
 
 /*
- * sr_ur_program_loader.hpp
+ * sr_ur_robot_state_client.hpp
  *
- *  Created on: 20 Oct 2014
+ *  Created on: 6 Nov 2014
  *      Author: Manos Nikolaidis
  */
 
-#ifndef SR_UR_PROGRAM_LOADER_HPP_
-#define SR_UR_PROGRAM_LOADER_HPP_
+#ifndef SR_UR_READ_ROBOT_STATE_HPP_
+#define SR_UR_READ_ROBOT_STATE_HPP_
 
 #include <uv.h>
 #include "sr_ur_controller/sr_ur_driver.hpp"
 
-struct UrProgramLoader
+struct UrRobotStateClient
 {
-  UrRobotDriver* ur_;
+  UrRobotDriver *ur_;
 
-  uv_connect_t connect_to_robot_request;
-  uv_write_t send_file_request;
-  uv_tcp_t send_file_stream;
-  uv_buf_t file_buffer;
-  uv_fs_t file_request;
+  uv_connect_t connection_request_;
+  uv_tcp_t tcp_stream_;
+  uv_buf_t buffer_;
+  bool robot_state_received;
 
-  char *file_path;
-  bool main_program_currently;
-
-  // host server will listen on this port for the robot client to connect
-  int host_port;
-
-  void prepare_file_buffer();
-  void load_file_from_disk();
-  void send_program(int reverse_port);
+  void start();
+  void stop();
 };
 
 #endif
