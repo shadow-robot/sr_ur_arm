@@ -56,9 +56,14 @@ void UrEventLoop::start()
   int status = pthread_attr_init(&attr);
   ROS_ASSERT(0 == status);
 
+  // set the scheduling policy to real time
+  int real_time_policy = SCHED_FIFO;
+  status = pthread_attr_setschedpolicy(&attr, real_time_policy);
+  ROS_ASSERT(0 == status);
+
+  // set the real time priority of the thread to maximum
   sched_param thread_param;
-  int policy = SCHED_FIFO;
-  thread_param.sched_priority = sched_get_priority_max(policy);
+  thread_param.__sched_priority = sched_get_priority_max(real_time_policy);
   status = pthread_attr_setschedparam(&attr, &thread_param);
   ROS_ASSERT(0 == status);
 

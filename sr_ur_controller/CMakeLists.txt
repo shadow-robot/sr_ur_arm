@@ -12,11 +12,12 @@ find_package(catkin REQUIRED COMPONENTS
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_library(sr_ur_controller
-    src/sr_ur_controller.cpp
-    src/sr_ur_event_loop.cpp
-    src/sr_ur_control_server.cpp
-    src/sr_ur_program_loader.cpp
-    src/sr_ur_robot_state_client.cpp
+	src/sr_ur_driver.cpp
+	src/sr_ur_event_loop.cpp
+	src/sr_ur_program_loader.cpp
+	src/sr_ur_control_server.cpp
+	src/sr_ur_controller.cpp
+	src/sr_ur_robot_state_client.cpp
 )
 add_dependencies(sr_ur_controller
 	${catkin_EXPORTED_TARGETS}
