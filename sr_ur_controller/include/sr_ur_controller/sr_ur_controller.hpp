@@ -47,7 +47,7 @@ protected:
   ros::NodeHandle node_;
 
   ros_ethercat_model::RobotState *robot_;
-  ros_ethercat_model::JointState* joint_states_[NUM_OF_JOINTS];
+  ros_ethercat_model::JointState *joint_states_[NUM_OF_JOINTS];
 
   // used for throttling loop at 8ms with master loop at 1ms
   int loop_count_;

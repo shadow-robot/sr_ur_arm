@@ -1,5 +1,5 @@
 <launch>
-  <!-- This launch file is for using the right and left UR arm withou Shadow hand -->
+  <!-- This launch file is for using the right and left UR arm without a Shadow hand -->
   
   <!-- Set to true for debugging -->
   <arg name="debug" default="false"/>
@@ -14,12 +14,12 @@
   
   <!-- real time control loop -->
   <group if="$(arg debug)">
-    <node name="realtime_loop" machine="local" pkg="ros_ethercat_loop" type="ros_ethercat_loop" args="-i _ -r robot_description"
-      output="screen" launch-prefix="ros_grant gdb -ex run -args"/>
+    <node name="realtime_loop" pkg="ros_ethercat_loop" type="ros_ethercat_loop" args="-i _ -r robot_description" output="screen"
+      launch-prefix="ros_grant gdb -ex run -args"/>
   </group>
   <group unless="$(arg debug)">
-    <node name="realtime_loop" machine="local" pkg="ros_ethercat_loop" type="ros_ethercat_loop" args="-i _ -r robot_description"
-      output="screen" launch-prefix="ros_grant"/>
+    <node name="realtime_loop" pkg="ros_ethercat_loop" type="ros_ethercat_loop" args="-i _ -r robot_description" output="screen"
+      launch-prefix="ros_grant"/>
   </group>
   
   <param name="ra_sr_ur_controller/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>

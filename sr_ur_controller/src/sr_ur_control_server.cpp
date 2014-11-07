@@ -38,7 +38,7 @@ const int32_t MSG_QUIT           = 1;
 const int32_t MSG_STOPJ          = 3;
 const int32_t MSG_SERVOJ         = 5;
 const int32_t MSG_SET_TEACH_MODE = 7;
-const double  MULT_JOINTSTATE    = 10000.0;
+const double MULT_JOINTSTATE     = 10000.0;
 
 // reuse the preallocated buffer for storing the robot's response
 // when a command is send from the server in the host to the client in the robot
@@ -47,7 +47,7 @@ static uv_buf_t allocate_response_buffer(uv_handle_t* command_stream, size_t)
   ROS_ASSERT(command_stream);
   ROS_ASSERT(command_stream->data);
 
-  UrControlServer *ctrl_server = (UrControlServer*) command_stream->data;
+  UrControlServer *ctrl_server = (UrControlServer*)command_stream->data;
   return ctrl_server->response_buffer_;
 }
 
@@ -67,12 +67,18 @@ static void received_response_cb(uv_stream_t* command_stream,
   ROS_ASSERT(command_stream);
   ROS_ASSERT(command_stream->data);
 
-  UrControlServer *ctrl_server = (UrControlServer*) command_stream->data;
-  ROS_ASSERT(command_stream == (uv_stream_t*)&ctrl_server->command_stream_);
+  UrControlServer *ctrl_server = (UrControlServer*)command_stream->data;
+  ROS_ASSERT(command_stream == (uv_stream_t* )&ctrl_server->command_stream_);
   ROS_ASSERT(buffer.base);
 
+  // the robot occasionally sends meaningless empty messages without further consequences
+  if (number_of_chars_received < 2)
+  {
+    return;
+  }
+
   buffer.base[number_of_chars_received] = '\0';
-  ROS_INFO("Robot replied : %s", buffer.base);
+  ROS_INFO("Robot at %s replied : %s", ctrl_server->ur_->robot_address_, buffer.base);
 
   // During startup these messages are expected in this order
   if (strcmp(buffer.base, "Connected") == 0)
@@ -87,7 +93,7 @@ static void received_response_cb(uv_stream_t* command_stream,
   }
   else if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Teach mode") == 0)
   {
-    ROS_INFO("Robot is ready to receive servo commands");
+    ROS_WARN("Robot at %s is ready to receive servo commands", ctrl_server->ur_->robot_address_);
     ctrl_server->ur_->robot_ready_to_move_ = true;
   }
 }
@@ -97,8 +103,8 @@ static void received_response_cb(uv_stream_t* command_stream,
 static void received_connection_cb(uv_stream_t* server_stream, int status)
 {
   ROS_ASSERT(server_stream);
-  UrControlServer *ctrl_server = (UrControlServer*) server_stream->data;
-  ROS_ASSERT(server_stream == (uv_stream_t*)&ctrl_server->server_stream_);
+  UrControlServer *ctrl_server = (UrControlServer*)server_stream->data;
+  ROS_ASSERT(server_stream == (uv_stream_t* )&ctrl_server->server_stream_);
 
   ROS_INFO("Received connection from robot");
 
@@ -136,24 +142,25 @@ void UrControlServer::start()
 
   // get the port that the OS assigned
   sockaddr address_with_bound_port;
-  int length = (int) sizeof(sockaddr);
+  int length = (int)sizeof(sockaddr);
   status = uv_tcp_getsockname(&server_stream_, &address_with_bound_port, &length);
   ROS_ASSERT(0 == status);
   int reverse_port = ntohs(((struct sockaddr_in*)&address_with_bound_port)->sin_port);
 
-  server_stream_.data = (void*) this;
-  command_stream_.data = (void*) this;
-  write_request_.data = (void*) this;
-  command_buffer_.base = (char*)malloc(sizeof(ur_servoj));
-  command_buffer_.len  = sizeof(ur_servoj);
+  server_stream_.data   = (void*)this;
+  command_stream_.data  = (void*)this;
+  write_request_.data   = (void*)this;
+
+  command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  command_buffer_.len   = sizeof(ur_servoj);
   response_buffer_.base = (char*)malloc(512);
-  // reserve extra byte for null termination with a full buffer
   response_buffer_.len  = 512 - 1;
 
   status = uv_listen((uv_stream_t*)&server_stream_, 1, received_connection_cb);
   ROS_ASSERT(0 == status);
   ROS_WARN("UrArmController started server on address %s and listening on port %d",
-           ur_->host_address_, reverse_port);
+           ur_->host_address_,
+           reverse_port);
 
   // after the robot program is loaded and has started running
   // it will attempt to connect on server_stream_
@@ -191,7 +198,8 @@ void UrControlServer::send_command()
   pthread_mutex_lock(&ur_->write_mutex_);
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
-    telegram->commanded_positions_[i] = htonl((int32_t)(MULT_JOINTSTATE * ur_->target_positions_[i]));
+    telegram->commanded_positions_[i] =
+        htonl((int32_t)(MULT_JOINTSTATE * ur_->target_positions_[i]));
   }
   pthread_mutex_unlock(&ur_->write_mutex_);
 
@@ -203,8 +211,6 @@ void UrControlServer::send_command()
   ROS_ASSERT(0 == status);
 }
 
-// send a command to the robot to quit the currently running program
-// meant to be sent at system shutdown
 void UrControlServer::send_ur_quit()
 {
   ROS_ASSERT(ur_);
@@ -221,8 +227,6 @@ void UrControlServer::send_ur_quit()
   ROS_ASSERT(0 == status);
 }
 
-// send a command to the robot to stop if it is currently moving
-// meant to be sent at system startup and shutdown
 void UrControlServer::send_ur_stop()
 {
   ROS_ASSERT(ur_);
@@ -239,9 +243,6 @@ void UrControlServer::send_ur_stop()
   ROS_ASSERT(0 == status);
 }
 
-// send a command to the robot to set/reset the teach mode according to the teach_mode argument
-// the teach mode is using for recording trajectories and if not reset will inhibit servo commands
-// meant to be sent at system startup
 void UrControlServer::send_ur_set_teach_mode(bool teach_mode)
 {
   ROS_ASSERT(ur_);

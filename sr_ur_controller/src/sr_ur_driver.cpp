@@ -33,16 +33,14 @@ void UrRobotDriver::start()
 {
   ROS_INFO("UrArmController starts communication with robot");
 
-  rs_client_ = new UrRobotStateClient();
-  rs_client_->ur_ = this;
-
-  el_ = new UrEventLoop();
-
+  rs_client_   = new UrRobotStateClient();
   ctrl_server_ = new UrControlServer();
-  ctrl_server_->ur_ = this;
+  pr_loader_   = new UrProgramLoader();
+  el_          = new UrEventLoop();
 
-  pr_loader_ = new UrProgramLoader();
-  pr_loader_->ur_ = this;
+  rs_client_->ur_   = this;
+  ctrl_server_->ur_ = this;
+  pr_loader_->ur_   = this;
 
   rs_client_->start();
   el_->start();

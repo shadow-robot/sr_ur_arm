@@ -30,22 +30,30 @@
 
 struct UrProgramLoader
 {
-  UrRobotDriver* ur_;
+  UrRobotDriver *ur_;
 
-  uv_connect_t connect_to_robot_request;
-  uv_write_t send_file_request;
-  uv_tcp_t send_file_stream;
-  uv_buf_t file_buffer;
-  uv_fs_t file_request;
+  uv_connect_t   connect_to_robot_request;
+  uv_write_t     send_file_request;
+  uv_tcp_t       send_file_stream;
+  uv_buf_t       file_buffer;
+  uv_fs_t        file_request;
 
+  //
   char *file_path;
+
+  //
   bool main_program_currently;
 
   // host server will listen on this port for the robot client to connect
   int host_port;
 
+  // prepare the robot program to send by format printing host address and port
   void prepare_file_buffer();
+
+  // load disk file containing robot program
   void load_file_from_disk();
+
+  // load first a reset and then a main robot program to the robot
   void send_program(int reverse_port);
 };
 

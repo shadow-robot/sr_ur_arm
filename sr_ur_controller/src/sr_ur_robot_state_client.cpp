@@ -123,6 +123,7 @@ static void robot_state_client_connected_cb(uv_connect_t* connection_request, in
 
 void UrRobotStateClient::start()
 {
+  ROS_ASSERT(ur_);
   ROS_ASSERT(ur_->robot_address_);
   ROS_ASSERT(ur_->host_address_);
 

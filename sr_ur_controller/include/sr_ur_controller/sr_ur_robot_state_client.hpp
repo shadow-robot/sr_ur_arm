@@ -32,10 +32,10 @@ struct UrRobotStateClient
 {
   UrRobotDriver *ur_;
 
-  uv_connect_t connection_request_;
-  uv_tcp_t tcp_stream_;
-  uv_buf_t buffer_;
-  bool robot_state_received;
+  uv_connect_t   connection_request_;
+  uv_tcp_t       tcp_stream_;
+  uv_buf_t       buffer_;
+  bool           robot_state_received;
 
   void start();
   void stop();

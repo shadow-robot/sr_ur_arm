@@ -122,9 +122,10 @@ static void file_opened_cb(uv_fs_t *file_request)
   ROS_ASSERT(0 == status);
 }
 
-// prepare the robot program to send by format printing host address and port
 void UrProgramLoader::prepare_file_buffer()
 {
+  ROS_ASSERT(ur_);
+
   if (!main_program_currently)
   {
     return;
@@ -142,9 +143,10 @@ void UrProgramLoader::prepare_file_buffer()
   file_buffer.len = allocated_size;
 }
 
-// load disk file containing robot program
 void UrProgramLoader::load_file_from_disk()
 {
+  ROS_ASSERT(ur_);
+
   // the main program is ur_robot_program that is doing the actual work
   // but ur_reset_program must be sent before that
   const char *file_name = main_program_currently ? "ur_robot_program" : "ur_reset_program";
@@ -166,9 +168,9 @@ void UrProgramLoader::load_file_from_disk()
   ROS_INFO("UrArmController loading robot program file %s with size %zu", file_path, file_size);
 
   connect_to_robot_request.data = (void*)this;
-  send_file_request.data = (void*)this;
-  send_file_stream.data = (void*)this;
-  send_file_stream.data = (void*)this;
+  send_file_request.data        = (void*)this;
+  send_file_stream.data         = (void*)this;
+  file_request.data             = (void*)this;
 
   status = uv_fs_open(ur_->el_->get_event_loop(),
                       &file_request,
@@ -179,9 +181,10 @@ void UrProgramLoader::load_file_from_disk()
   ROS_ASSERT(0 == status);
 }
 
-// load first a reset and then a main robot program to the robot
 void UrProgramLoader::send_program(int reverse_port)
 {
+  ROS_ASSERT(ur_);
+
   host_port = reverse_port;
   load_file_from_disk();
 
