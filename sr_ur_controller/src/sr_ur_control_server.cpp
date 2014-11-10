@@ -38,7 +38,9 @@ const int32_t MSG_QUIT           = 1;
 const int32_t MSG_STOPJ          = 3;
 const int32_t MSG_SERVOJ         = 5;
 const int32_t MSG_SET_TEACH_MODE = 7;
-const double MULT_JOINTSTATE     = 10000.0;
+
+const double  MULT_JOINTSTATE    = 10000.0;
+const size_t  RESPONSE_SIZE      = 512;
 
 // reuse the preallocated buffer for storing the robot's response
 // when a command is send from the server in the host to the client in the robot
@@ -72,28 +74,29 @@ static void received_response_cb(uv_stream_t* command_stream,
   ROS_ASSERT(buffer.base);
 
   // the robot occasionally sends meaningless empty messages without further consequences
-  if (number_of_chars_received < 2)
+  if (number_of_chars_received < 2 || !isupper(buffer.base[0]))
   {
     return;
   }
 
   buffer.base[number_of_chars_received] = '\0';
-  ROS_INFO("Robot at %s replied : %s", ctrl_server->ur_->robot_address_, buffer.base);
+  ROS_INFO("%s robot replied : %s", ctrl_server->ur_->robot_side_, buffer.base);
 
   // During startup these messages are expected in this order
   if (strcmp(buffer.base, "Connected") == 0)
   {
-    ROS_INFO("Asking the robot to stop");
-    ctrl_server->send_ur_stop();
+    ROS_INFO("Asking the %s robot to stop", ctrl_server->ur_->robot_side_);
+    ctrl_server->send_message(MSG_STOPJ);
   }
   else if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Stop") == 0)
   {
-    ROS_INFO("Asking to reset the teach mode");
-    ctrl_server->send_ur_set_teach_mode(false);
+    ROS_INFO("Asking %s robot to reset the teach mode", ctrl_server->ur_->robot_side_);
+    ctrl_server->send_message(MSG_SET_TEACH_MODE);
   }
   else if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Teach mode") == 0)
   {
-    ROS_WARN("Robot at %s is ready to receive servo commands", ctrl_server->ur_->robot_address_);
+    ROS_WARN("%s robot is ready to receive servo commands", ctrl_server->ur_->robot_side_);
+    memset(buffer.base, 0, RESPONSE_SIZE);
     ctrl_server->ur_->robot_ready_to_move_ = true;
   }
 }
@@ -106,7 +109,7 @@ static void received_connection_cb(uv_stream_t* server_stream, int status)
   UrControlServer *ctrl_server = (UrControlServer*)server_stream->data;
   ROS_ASSERT(server_stream == (uv_stream_t* )&ctrl_server->server_stream_);
 
-  ROS_INFO("Received connection from robot");
+  ROS_INFO("Received connection from %s robot", ctrl_server->ur_->robot_side_);
 
   status = uv_tcp_init(ctrl_server->ur_->el_->get_event_loop(), &ctrl_server->command_stream_);
   ROS_ASSERT(0 == status);
@@ -120,7 +123,8 @@ static void received_connection_cb(uv_stream_t* server_stream, int status)
                          received_response_cb);
   ROS_ASSERT(0 == status);
 
-  ROS_INFO("Robot controller successfully connected to the host");
+  ROS_INFO("%s robot controller successfully connected to the host",
+           ctrl_server->ur_->robot_side_);
 }
 
 void UrControlServer::start()
@@ -153,14 +157,13 @@ void UrControlServer::start()
 
   command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
   command_buffer_.len   = sizeof(ur_servoj);
-  response_buffer_.base = (char*)malloc(512);
-  response_buffer_.len  = 512 - 1;
+  response_buffer_.base = (char*)malloc(RESPONSE_SIZE);
+  response_buffer_.len  = RESPONSE_SIZE - 1;
 
   status = uv_listen((uv_stream_t*)&server_stream_, 1, received_connection_cb);
   ROS_ASSERT(0 == status);
-  ROS_WARN("UrArmController started server on address %s and listening on port %d",
-           ur_->host_address_,
-           reverse_port);
+  ROS_WARN("UrArmController of %s robot started server on address %s and listening on port %d",
+           ur_->robot_side_, ur_->host_address_, reverse_port);
 
   // after the robot program is loaded and has started running
   // it will attempt to connect on server_stream_
@@ -172,9 +175,9 @@ void UrControlServer::start()
 void UrControlServer::stop()
 {
   ROS_ASSERT(ur_);
-  ROS_INFO("UrArmController stops the control server");
-  send_ur_stop();
-  send_ur_quit();
+  ROS_INFO("UrArmController of %s robot stops the control server", ur_->robot_side_);
+  send_message(MSG_STOPJ);
+  send_message(MSG_SET_TEACH_MODE);
 
   pthread_mutex_destroy(&ur_->write_mutex_);
 
@@ -187,7 +190,7 @@ void UrControlServer::stop()
   free(response_buffer_.base);
 }
 
-void UrControlServer::send_command()
+void UrControlServer::send_servo_command()
 {
   ROS_ASSERT(ur_);
 
@@ -211,13 +214,13 @@ void UrControlServer::send_command()
   ROS_ASSERT(0 == status);
 }
 
-void UrControlServer::send_ur_quit()
+void UrControlServer::send_message(int32_t ur_msg_type)
 {
   ROS_ASSERT(ur_);
 
-  ur_quit *telegram = (ur_quit*)command_buffer_.base;
+  ur_servoj *telegram = (ur_servoj*)command_buffer_.base;
   memset(telegram, 0, sizeof(ur_servoj));
-  telegram->message_type_ = htonl(MSG_QUIT);
+  telegram->message_type_ = htonl(ur_msg_type);
 
   int status = uv_write(&write_request_,
                         (uv_stream_t*)&command_stream_,
@@ -225,38 +228,5 @@ void UrControlServer::send_ur_quit()
                         1,
                         command_sent_cb);
   ROS_ASSERT(0 == status);
-}
 
-void UrControlServer::send_ur_stop()
-{
-  ROS_ASSERT(ur_);
-
-  ur_stop *telegram = (ur_stop*)command_buffer_.base;
-  memset(telegram, 0, sizeof(ur_servoj));
-  telegram->message_type_ = htonl(MSG_STOPJ);
-
-  int status = uv_write(&write_request_,
-                        (uv_stream_t*)&command_stream_,
-                        &command_buffer_,
-                        1,
-                        command_sent_cb);
-  ROS_ASSERT(0 == status);
-}
-
-void UrControlServer::send_ur_set_teach_mode(bool teach_mode)
-{
-  ROS_ASSERT(ur_);
-
-  ur_set_teach_mode *telegram = (ur_set_teach_mode*)command_buffer_.base;
-  memset(telegram, 0, sizeof(ur_servoj));
-  telegram->message_type_ = htonl(MSG_SET_TEACH_MODE);
-  int32_t mode = teach_mode ? htonl(1) : htonl(0);
-  telegram->teach_mode_ = htonl(mode);
-
-  int status = uv_write(&write_request_,
-                        (uv_stream_t*)&command_stream_,
-                        &command_buffer_,
-                        1,
-                        command_sent_cb);
-  ROS_ASSERT(0 == status);
 }

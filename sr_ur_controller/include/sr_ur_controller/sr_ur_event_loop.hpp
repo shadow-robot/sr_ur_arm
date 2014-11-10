@@ -25,15 +25,20 @@
 #define SR_UR_EVENT_LOOP_HPP_
 
 #include <uv.h>
+#include "sr_ur_controller/sr_ur_driver.hpp"
 
 struct UrEventLoop
 {
+  UrRobotDriver *ur_;
+
   uv_loop_t* event_loop_;
   pthread_t  asynchronous_io_;
+  uint64_t   last_time_;
 
   uv_loop_t* get_event_loop();
-  void start();
-  void stop();
+  double     get_loop_period();
+  void       start();
+  void       stop();
 };
 
 

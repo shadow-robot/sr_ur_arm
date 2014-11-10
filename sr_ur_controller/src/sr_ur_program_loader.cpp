@@ -57,7 +57,7 @@ static void file_sent_cb(uv_write_t* file_request, int status)
     free(urpl->ur_->robot_program_path_);
     free(urpl->file_path);
     free(urpl->file_buffer.base);
-    ROS_INFO("UrArmController finished sending robot program");
+    ROS_INFO("UrArmController of %s robot finished sending robot program", urpl->ur_->robot_side_);
   }
 }
 
@@ -165,7 +165,8 @@ void UrProgramLoader::load_file_from_disk()
   file_buffer.base = (char*)realloc((void*)file_buffer.base, file_size);
   file_buffer.len = file_size;
 
-  ROS_INFO("UrArmController loading robot program file %s with size %zu", file_path, file_size);
+  ROS_INFO("UrArmController of %s robot loading robot program file %s with size %zu",
+           ur_->robot_side_, file_path, file_size);
 
   connect_to_robot_request.data = (void*)this;
   send_file_request.data        = (void*)this;

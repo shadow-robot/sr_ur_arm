@@ -85,6 +85,7 @@ bool UrArmController::init(ros_ethercat_model::RobotState* robot, ros::NodeHandl
     return false;
   }
 
+  ur_.robot_side_         = strdup(robot_id_[0] == 'r' ? "RIGHT" : "LEFT");
   ur_.robot_address_      = strdup(robot_ip_address.c_str());
   ur_.host_address_       = strdup(control_pc_ip_address.c_str());
   ur_.robot_program_path_ = strdup(robot_program_path_param.c_str());

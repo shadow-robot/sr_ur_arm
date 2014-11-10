@@ -44,20 +44,10 @@ struct UrControlServer
   void stop();
 
   // send a servo command to the robot
-  void send_command();
+  void send_servo_command();
 
-  // send a command to the robot to quit the currently running program
-  // meant to be sent at system shutdown
-  void send_ur_quit();
-
-  // send a command to the robot to stop if it is currently moving
-  // meant to be sent at system startup and shutdown
-  void send_ur_stop();
-
-  // send a command to the robot to set/reset the teach mode according to the teach_mode argument
-  // the teach mode is using for recording trajectories and if not reset will inhibit servo commands
-  // meant to be sent at system startup
-  void send_ur_set_teach_mode(bool teach_mode);
+  // sends a non servo message to the robot
+  void send_message(int32_t ur_msg_type);
 };
 
 #endif

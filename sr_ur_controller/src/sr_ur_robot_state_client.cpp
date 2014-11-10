@@ -99,8 +99,8 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
   {
     rs_client->ur_->ctrl_server_->start();
     rs_client->robot_state_received = true;
-    ROS_WARN("UrArmController started receiving robot state from address %s and port %d",
-             rs_client->ur_->robot_address_, ROBOT_STATE_PORT);
+    ROS_WARN("UrArmController of %s robot started receiving robot state from address %s and port %d",
+             rs_client->ur_->robot_side_, rs_client->ur_->robot_address_, ROBOT_STATE_PORT);
   }
 }
 

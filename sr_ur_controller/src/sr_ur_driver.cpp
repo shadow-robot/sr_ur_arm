@@ -38,9 +38,10 @@ void UrRobotDriver::start()
   pr_loader_   = new UrProgramLoader();
   el_          = new UrEventLoop();
 
-  rs_client_->ur_   = this;
+  rs_client_  ->ur_ = this;
   ctrl_server_->ur_ = this;
-  pr_loader_->ur_   = this;
+  pr_loader_  ->ur_ = this;
+  el_         ->ur_ = this;
 
   rs_client_->start();
   el_->start();
@@ -48,10 +49,11 @@ void UrRobotDriver::start()
 
 void UrRobotDriver::stop()
 {
-  ROS_INFO("UrArmController stops communicating with robot");
+  ROS_INFO("UrArmController stops communicating with %s robot", robot_side_);
 
   free(robot_address_);
   free(host_address_);
+  free(robot_side_);
 
   delete rs_client_;
   delete el_;
@@ -61,5 +63,5 @@ void UrRobotDriver::stop()
 
 void UrRobotDriver::send_command()
 {
-  ctrl_server_->send_command();
+  ctrl_server_->send_servo_command();
 }

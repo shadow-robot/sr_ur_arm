@@ -66,6 +66,9 @@ struct UrRobotDriver
   // path to a file containing a robot program
   char *robot_program_path_;
 
+  // left or right
+  char *robot_side_;
+
   UrEventLoop *el_;
   UrControlServer *ctrl_server_;
   UrRobotStateClient *rs_client_;

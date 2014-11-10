@@ -28,7 +28,7 @@
 // function for the thread that runs the event loop
 static void *asynchronous_io_loop(void *data)
 {
-  UrEventLoop* el = (UrEventLoop*) data;
+  UrEventLoop* el = (UrEventLoop*)data;
 
   // run the loop
   uv_run_mode run_mode = UV_RUN_DEFAULT;
@@ -39,9 +39,11 @@ static void *asynchronous_io_loop(void *data)
 // returns the event loop and creates a new one if needed
 uv_loop_t* UrEventLoop::get_event_loop()
 {
+  ROS_ASSERT(ur_);
+
   if (!event_loop_)
   {
-    ROS_INFO("UrArmController started a new event loop");
+    ROS_INFO("UrArmController of %s robot started a new event loop", ur_->robot_side_);
     event_loop_ = uv_loop_new();
   }
   ROS_ASSERT(event_loop_);
@@ -52,6 +54,8 @@ uv_loop_t* UrEventLoop::get_event_loop()
 // and at least one callback has been registered with the event loop
 void UrEventLoop::start()
 {
+  ROS_ASSERT(ur_);
+
   pthread_attr_t attr;
   int status = pthread_attr_init(&attr);
   ROS_ASSERT(0 == status);
@@ -72,10 +76,23 @@ void UrEventLoop::start()
 
   status = pthread_attr_destroy(&attr);
   ROS_ASSERT(0 == status);
+
+  last_time_ = uv_hrtime();
 }
 
 // the event loop will actually terminate after pending callbacks return
 void UrEventLoop::stop()
 {
+  ROS_ASSERT(ur_);
+
   uv_stop(event_loop_);
+  uv_loop_delete(event_loop_);
+}
+
+double UrEventLoop::get_loop_period()
+{
+  ROS_ASSERT(ur_);
+
+  double interval = uv_hrtime() - last_time_;
+  return interval * (1 / 1000000);
 }
