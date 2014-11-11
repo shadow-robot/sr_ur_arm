@@ -146,6 +146,7 @@ void UrProgramLoader::prepare_file_buffer()
 void UrProgramLoader::load_file_from_disk()
 {
   ROS_ASSERT(ur_);
+  sleep(0.5);
 
   // the main program is ur_robot_program that is doing the actual work
   // but ur_reset_program must be sent before that

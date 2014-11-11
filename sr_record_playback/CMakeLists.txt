@@ -16,7 +16,11 @@ catkin_package(
 		control_msgs
 )
 
-install(PROGRAMS scripts/trajectory_player scripts/trajectory_recorder
+install(PROGRAMS
+		scripts/trajectory_player
+		scripts/trajectory_recorder
+		scripts/pose_mover
+		scripts/pose_recorder
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

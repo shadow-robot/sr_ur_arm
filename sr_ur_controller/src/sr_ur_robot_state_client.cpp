@@ -75,13 +75,24 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
 
   ROS_ASSERT(buffer.base);
 
-  if (sizeof(ur_short_robot_state) > number_of_chars_received)
+  if (sizeof(ur_short_robot_state) > number_of_chars_received ||
+      sizeof(ur_robot_state) < number_of_chars_received)
   {
       return;
   }
 
   pthread_mutex_lock(&rs_client->ur_->robot_state_mutex_);
   ur_robot_state *robot_state = (ur_robot_state*)buffer.base;
+
+  for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
+  {
+    if (ntohd(&robot_state->actual_positions_[i]) >  4*M_PI ||
+        ntohd(&robot_state->actual_positions_[i]) < -4*M_PI)
+    {
+      pthread_mutex_unlock(&rs_client->ur_->robot_state_mutex_);
+      return;
+    }
+  }
 
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {

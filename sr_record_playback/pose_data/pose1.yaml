@@ -1,0 +1,13 @@
+{la_elbow_joint: -51480744313997.07, la_shoulder_lift_joint: -3.7920542731001754e+276,
+  la_shoulder_pan_joint: -9.797814950042054e-305, la_wrist_1_joint: 4.7657509322869494e-234,
+  la_wrist_2_joint: 5.323630115e-315, la_wrist_3_joint: 5.32419675e-315, lh_FFJ1: 0.0,
+  lh_FFJ2: 0.0, lh_FFJ3: 0.0, lh_FFJ4: 0.0, lh_LFJ1: 0.0, lh_LFJ2: 0.0, lh_LFJ3: 0.0,
+  lh_LFJ4: 0.0, lh_LFJ5: 0.0, lh_MFJ1: 0.0, lh_MFJ2: 0.0, lh_MFJ3: 0.0, lh_MFJ4: 0.0,
+  lh_RFJ1: 0.0, lh_RFJ2: 0.0, lh_RFJ3: 0.0, lh_RFJ4: 0.0, lh_THJ1: 0.0, lh_THJ2: 0.0,
+  lh_THJ3: 0.0, lh_THJ4: 0.0, lh_THJ5: 0.0, lh_WRJ1: 0.0, lh_WRJ2: 0.0, ra_elbow_joint: -1.483241383229391,
+  ra_shoulder_lift_joint: -1.5499122778521937, ra_shoulder_pan_joint: -0.3354414145099085,
+  ra_wrist_1_joint: -3.3324645201312464, ra_wrist_2_joint: -0.759653393422262, ra_wrist_3_joint: -3.000974957142965,
+  rh_FFJ1: 0.0, rh_FFJ2: 0.0, rh_FFJ3: 0.0, rh_FFJ4: 0.0, rh_LFJ1: 0.0, rh_LFJ2: 0.0,
+  rh_LFJ3: 0.0, rh_LFJ4: 0.0, rh_LFJ5: 0.0, rh_MFJ1: 0.0, rh_MFJ2: 0.0, rh_MFJ3: 0.0,
+  rh_MFJ4: 0.0, rh_RFJ1: 0.0, rh_RFJ2: 0.0, rh_RFJ3: 0.0, rh_RFJ4: 0.0, rh_THJ1: 0.0,
+  rh_THJ2: 0.0, rh_THJ3: 0.0, rh_THJ4: 0.0, rh_THJ5: 0.0, rh_WRJ1: 0.0, rh_WRJ2: 0.0}

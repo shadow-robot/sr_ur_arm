@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+from rospy import init_node, is_shutdown, loginfo, Subscriber, sleep
+from sensor_msgs.msg import JointState
+from sys import argv
+from yaml import dump
+from itertools import izip
+
+"""
+Records the pose of the system for future use with pose_mover
+It will create a yaml file with given name or overwrite it if it exists
+The robot is not supposed to be moving when a pose is recorded
+example usage
+
+./pose_recorder my_pose.yaml
+
+"""
+
+
+class SrUrPoseRecorder(object):
+
+    def __init__(self):
+        init_node("PoseRecorder", anonymous=True)
+        self.pose_yaml_file = open(argv[1], 'w')
+
+        self.joint_subscriber = Subscriber(
+            "/joint_states", JointState, self.joint_state_callback)
+        self.jstate = None
+
+    def joint_state_callback(self, msg):
+        self.jstate = msg
+
+    def run(self):
+        loginfo("Recording started")
+        while self.jstate == None:
+            sleep(0.1)
+
+        pose = {jn: jp for jn, jp in izip(
+            self.jstate.name, self.jstate.position)}
+        dump(pose, self.pose_yaml_file)
+
+if __name__ == '__main__':
+    pose_recorder = SrUrPoseRecorder()
+    pose_recorder.run()
+    pose_recorder.pose_yaml_file.close()
+    loginfo("Recording has finished")

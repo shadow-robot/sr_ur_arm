@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+from rospy import init_node, signal_shutdown, loginfo, ServiceProxy, Duration
+from actionlib import SimpleActionClient
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
+from controller_manager_msgs.srv import SwitchController
+from sys import argv
+from yaml import load
+
+"""
+Moves the robot to a recorded pose. Urdf must match the one used in recording.
+example usage for reaching the pose in 8 secs
+
+./pose_mover pose.yaml 8
+
+"""
+
+
+class SrUrPoseMover(object):
+
+    def __init__(self):
+        self.switch_controllers = ServiceProxy(
+            'controller_manager/switch_controller', SwitchController)
+        self.switch_controllers(
+            ['robot_trajectory_controller'], [], SwitchController._request_class.BEST_EFFORT)
+        self.client = SimpleActionClient(
+            'robot_trajectory_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+        self.trajectory_goal = FollowJointTrajectoryGoal()
+        self.trajectory_goal.trajectory = JointTrajectory()
+
+    def parse_pose(self):
+        _positions = []
+        _velocities = []
+        with open(argv[1]) as pose_yaml_file:
+            yaml_pose = load(pose_yaml_file)
+            _time_from_start = Duration(float(argv[2]))
+            for jname, jposition in yaml_pose.iteritems():
+                self.trajectory_goal.trajectory.joint_names.append(jname)
+                _positions.append(jposition)
+                _velocities.append(0)
+            self.trajectory_goal.trajectory.points = [JointTrajectoryPoint(
+                positions=_positions, velocities=_velocities, time_from_start=_time_from_start)]
+
+    def move_to_pose(self):
+        self.client.send_goal(self.trajectory_goal)
+        try:
+            self.client.wait_for_result()
+        except KeyboardInterrupt:
+            self.client.cancel_goal()
+            raise
+
+    def move(self):
+        try:
+            init_node("PoseMover", anonymous=True, disable_signals=True)
+
+            loginfo("Reading pose")
+            self.parse_pose()
+
+            loginfo("Pose parsed. Waiting for server...")
+            self.client.wait_for_server()
+
+            loginfo("Connected to server. Start moving")
+            self.move_to_pose()
+
+        except (KeyboardInterrupt, SystemExit):
+            signal_shutdown("KeyboardInterrupt")
+            raise
+
+
+if __name__ == '__main__':
+    pose_mover = SrUrPoseMover()
+    pose_mover.move()
+    loginfo("Moved to pose")

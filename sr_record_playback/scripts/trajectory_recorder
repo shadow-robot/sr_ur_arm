@@ -45,7 +45,7 @@ class SrUrTrajectoryRecorder(object):
 
 
 if __name__ == '__main__':
-    trajectroy_recorder = SrUrTrajectoryRecorder()
-    trajectroy_recorder.run()
-    trajectroy_recorder.trajectory_file.close()
+    trajectory_recorder = SrUrTrajectoryRecorder()
+    trajectory_recorder.run()
+    trajectory_recorder.trajectory_file.close()
     loginfo("Recording has finished")

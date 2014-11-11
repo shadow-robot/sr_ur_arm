@@ -84,6 +84,6 @@ class SrUrTrajectoryPlayer(object):
 
 
 if __name__ == '__main__':
-    trajectroy_player = SrUrTrajectoryPlayer()
-    trajectroy_player.run()
+    trajectory_player = SrUrTrajectoryPlayer()
+    trajectory_player.run()
     loginfo("Completed trajectory")
