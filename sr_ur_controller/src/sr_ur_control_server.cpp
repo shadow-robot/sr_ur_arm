@@ -70,7 +70,7 @@ static void received_response_cb(uv_stream_t* command_stream,
   ROS_ASSERT(command_stream->data);
 
   UrControlServer *ctrl_server = (UrControlServer*)command_stream->data;
-  ROS_ASSERT(command_stream == (uv_stream_t* )&ctrl_server->command_stream_);
+  ROS_ASSERT(command_stream == (uv_stream_t*)&ctrl_server->command_stream_);
   ROS_ASSERT(buffer.base);
 
   // the robot occasionally sends meaningless empty messages without further consequences
@@ -83,17 +83,21 @@ static void received_response_cb(uv_stream_t* command_stream,
   ROS_INFO("%s robot replied : %s", ctrl_server->ur_->robot_side_, buffer.base);
 
   // During startup these messages are expected in this order
-  if (strcmp(buffer.base, "Connected") == 0)
+  if (strstr(buffer.base, "Connected") != NULL)
   {
     ROS_INFO("Asking the %s robot to stop", ctrl_server->ur_->robot_side_);
     ctrl_server->send_message(MSG_STOPJ);
+    return;
   }
-  else if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Stop") == 0)
+
+  if (!ctrl_server->ur_->robot_ready_to_move_ && strstr(buffer.base, "Stop") != NULL)
   {
     ROS_INFO("Asking %s robot to reset the teach mode", ctrl_server->ur_->robot_side_);
     ctrl_server->send_message(MSG_SET_TEACH_MODE);
+    return;
   }
-  else if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Teach mode") == 0)
+
+  if (!ctrl_server->ur_->robot_ready_to_move_ && strstr(buffer.base, "Teach mode") != NULL)
   {
     ROS_WARN("%s robot is ready to receive servo commands", ctrl_server->ur_->robot_side_);
     memset(buffer.base, 0, RESPONSE_SIZE);

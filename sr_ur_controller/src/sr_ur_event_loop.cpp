@@ -43,7 +43,6 @@ uv_loop_t* UrEventLoop::get_event_loop()
 
   if (!event_loop_)
   {
-    ROS_INFO("UrArmController of %s robot started a new event loop", ur_->robot_side_);
     event_loop_ = uv_loop_new();
   }
   ROS_ASSERT(event_loop_);

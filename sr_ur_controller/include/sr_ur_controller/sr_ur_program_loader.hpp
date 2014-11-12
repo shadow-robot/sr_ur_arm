@@ -38,10 +38,11 @@ struct UrProgramLoader
   uv_buf_t       file_buffer;
   uv_fs_t        file_request;
 
-  //
+  // path to file with the robot program
   char *file_path;
 
-  //
+  // false if the reset program is currently loaded
+  // true if the main robot program is currently loaded
   bool main_program_currently;
 
   // host server will listen on this port for the robot client to connect

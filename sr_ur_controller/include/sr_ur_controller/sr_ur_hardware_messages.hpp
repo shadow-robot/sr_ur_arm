@@ -56,7 +56,7 @@ struct ur_robot_state
 {
   int32_t message_size_;
   double time_;
-  double target_positions[NUM_OF_JOINTS];
+  double target_positions_[NUM_OF_JOINTS];
   double target_velocities_[NUM_OF_JOINTS];
   double target_accelerations_[NUM_OF_JOINTS];
   double target_currents_[NUM_OF_JOINTS];
@@ -94,13 +94,14 @@ struct ur_short_robot_state
 {
   int32_t message_size_;
   double time_;
-  double target_positions[NUM_OF_JOINTS];
+  double target_positions_[NUM_OF_JOINTS];
   double target_velocities_[NUM_OF_JOINTS];
   double target_accelerations_[NUM_OF_JOINTS];
   double target_currents_[NUM_OF_JOINTS];
   double target_torques_[NUM_OF_JOINTS];
   double actual_positions_[NUM_OF_JOINTS];
   double actual_velocities_[NUM_OF_JOINTS];
+  double actual_currents_[NUM_OF_JOINTS];
 }__attribute__((packed));
 
 #endif

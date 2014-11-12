@@ -75,14 +75,23 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
 
   ROS_ASSERT(buffer.base);
 
-  if (sizeof(ur_short_robot_state) > number_of_chars_received ||
-      sizeof(ur_robot_state) < number_of_chars_received)
+  pthread_mutex_lock(&rs_client->ur_->robot_state_mutex_);
+  char *pdata;
+  if (sizeof(ur_robot_state) == number_of_chars_received)
   {
-      return;
+    pdata = buffer.base;
+  }
+  else if (sizeof(ur_short_robot_state) + sizeof(ur_robot_state) <= number_of_chars_received)
+  {
+    pdata = buffer.base + sizeof(ur_robot_state);
+  }
+  else
+  {
+    pthread_mutex_unlock(&rs_client->ur_->robot_state_mutex_);
+    return;
   }
 
-  pthread_mutex_lock(&rs_client->ur_->robot_state_mutex_);
-  ur_robot_state *robot_state = (ur_robot_state*)buffer.base;
+  ur_robot_state *robot_state = (ur_robot_state*)pdata;
 
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
@@ -116,15 +125,14 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
 }
 
 // a client in the host PC has successfully connected to a server in the robot at ROBOT_STATE_PORT
-// to receive the robot state every 8ms
 static void robot_state_client_connected_cb(uv_connect_t* connection_request, int status)
 {
   UrRobotStateClient *rs_client = (UrRobotStateClient*) connection_request->data;
   ROS_ASSERT(0 == status);
   ROS_ASSERT(connection_request == &rs_client->connection_request_);
 
-  rs_client->buffer_.base = (char*)malloc(sizeof(ur_robot_state));
-  rs_client->buffer_.len  = sizeof(ur_robot_state);
+  rs_client->buffer_.base = (char*)malloc(2*sizeof(ur_robot_state));
+  rs_client->buffer_.len  = 2*sizeof(ur_robot_state);
 
   status = uv_read_start(connection_request->handle,
                          allocate_robot_state_buffer,
