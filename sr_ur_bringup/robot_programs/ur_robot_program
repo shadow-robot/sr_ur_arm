@@ -10,7 +10,7 @@ def driverProg():
       enter_critical
       q = commanded_positions
       exit_critical
-      servoj(q, 0, 0, 0.008)
+      servoj(q, 0, 0, 0.016)
     end
   end
   socket_open("%s", %d)
