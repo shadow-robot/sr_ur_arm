@@ -60,7 +60,9 @@ protected:
 
   UrRobotDriver ur_;
 
+  void enforceLimits(double *targets);
   virtual void setCommandCB(const std_msgs::Float64MultiArrayConstPtr& msg);
+
   ros::Subscriber sub_command_;
 };
 }

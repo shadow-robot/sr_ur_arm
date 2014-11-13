@@ -21,10 +21,11 @@
  *      Author: Manos Nikolaidis
  */
 
-#ifndef SR_UR_COMMON_HPP_
-#define SR_UR_COMMON_HPP_
+#ifndef SR_UR_DRIVER_HPP_
+#define SR_UR_DRIVER_HPP_
 
 #include <stdint.h>
+#include <pthread.h>
 
 const size_t NUM_OF_JOINTS = 6;
 
@@ -46,12 +47,13 @@ struct UrRobotDriver
 {
   bool robot_ready_to_move_;
   double target_positions_[NUM_OF_JOINTS];     // radians
+  double previous_targets_[NUM_OF_JOINTS];     // radians
 
   // synchronize target_positions between controller and driver
   pthread_mutex_t write_mutex_;
 
-  double joint_positions_[NUM_OF_JOINTS];      // radians
-  double joint_velocities_[NUM_OF_JOINTS];     // radians/sec
+  double joint_positions_     [NUM_OF_JOINTS]; // radians
+  double joint_velocities_    [NUM_OF_JOINTS]; // radians/sec
   double joint_motor_currents_[NUM_OF_JOINTS]; // Amperes
 
   // synchronize robot state between controller and driver
@@ -69,10 +71,10 @@ struct UrRobotDriver
   // left or right
   char *robot_side_;
 
-  UrEventLoop *el_;
-  UrControlServer *ctrl_server_;
+  UrEventLoop        *el_;
+  UrControlServer    *ctrl_server_;
   UrRobotStateClient *rs_client_;
-  UrProgramLoader *pr_loader_;
+  UrProgramLoader    *pr_loader_;
 
   // The robot controller calls this to start communication with the robot controller.
   // A series of call-backs will be called and when everything is ready the flag robot_ready_to_move will be set.
@@ -86,6 +88,9 @@ struct UrRobotDriver
 
   // when the controller is about to stop it should call this
   void stop();
+
+  // restart the robot driver in case of an error
+  void restart();
 
   // write commands to the robot
   void send_command();

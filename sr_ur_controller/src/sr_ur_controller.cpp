@@ -30,6 +30,7 @@
 PLUGINLIB_EXPORT_CLASS(sr_ur::UrArmController, controller_interface::ControllerBase)
 
 using namespace std;
+const int UR_PERIOD = 16;
 
 namespace sr_ur
 {
@@ -110,13 +111,13 @@ void UrArmController::stopping(const ros::Time&)
 
 void UrArmController::update(const ros::Time&, const ros::Duration&)
 {
-  if (loop_count_++ > 16)
+  if (loop_count_++ > UR_PERIOD)
   {
     pthread_mutex_lock(&ur_.robot_state_mutex_);
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
     {
-      joint_states_[i]->position_ = ur_.joint_positions_[i];
-      joint_states_[i]->velocity_ = ur_.joint_velocities_[i];
+      joint_states_[i]->position_ = ur_.joint_positions_     [i];
+      joint_states_[i]->velocity_ = ur_.joint_velocities_    [i];
       joint_states_[i]->effort_   = ur_.joint_motor_currents_[i];
       if (!ur_.robot_ready_to_move_)
       {
@@ -134,6 +135,7 @@ void UrArmController::update(const ros::Time&, const ros::Duration&)
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
     {
       ur_.target_positions_[i] = joint_states_[i]->commanded_position_;
+      enforceLimits(ur_.target_positions_);
     }
     pthread_mutex_unlock(&ur_.write_mutex_);
 
@@ -148,6 +150,24 @@ void UrArmController::setCommandCB(const std_msgs::Float64MultiArrayConstPtr& ms
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
     joint_states_[i]->commanded_position_ = msg->data[i];
+  }
+}
+
+void UrArmController::enforceLimits(double *targets)
+{
+  for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
+  {
+    targets[i] = min(targets[i], joint_states_[i]->joint_->limits->upper);
+    targets[i] = max(targets[i], joint_states_[i]->joint_->limits->lower);
+
+    double desired_velocity = (targets[i] - ur_.previous_targets_[i])/UR_PERIOD;
+    if ((targets[i] > ur_.previous_targets_[i] &&
+         desired_velocity >  joint_states_[i]->joint_->limits->velocity) ||
+        (targets[i] < ur_.previous_targets_[i] &&
+         desired_velocity < -joint_states_[i]->joint_->limits->velocity))
+    {
+      targets[i] = UR_PERIOD*joint_states_[i]->joint_->limits->velocity + ur_.previous_targets_[i];
+    }
   }
 }
 

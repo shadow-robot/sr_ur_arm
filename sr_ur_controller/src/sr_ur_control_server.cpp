@@ -83,21 +83,21 @@ static void received_response_cb(uv_stream_t* command_stream,
   ROS_INFO("%s robot replied : %s", ctrl_server->ur_->robot_side_, buffer.base);
 
   // During startup these messages are expected in this order
-  if (strstr(buffer.base, "Connected") != NULL)
+  if (strcmp(buffer.base, "Connected") == 0)
   {
     ROS_INFO("Asking the %s robot to stop", ctrl_server->ur_->robot_side_);
     ctrl_server->send_message(MSG_STOPJ);
     return;
   }
 
-  if (!ctrl_server->ur_->robot_ready_to_move_ && strstr(buffer.base, "Stop") != NULL)
+  if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Stop") == 0)
   {
     ROS_INFO("Asking %s robot to reset the teach mode", ctrl_server->ur_->robot_side_);
     ctrl_server->send_message(MSG_SET_TEACH_MODE);
     return;
   }
 
-  if (!ctrl_server->ur_->robot_ready_to_move_ && strstr(buffer.base, "Teach mode") != NULL)
+  if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Teach mode") == 0)
   {
     ROS_WARN("%s robot is ready to receive servo commands", ctrl_server->ur_->robot_side_);
     memset(buffer.base, 0, RESPONSE_SIZE);

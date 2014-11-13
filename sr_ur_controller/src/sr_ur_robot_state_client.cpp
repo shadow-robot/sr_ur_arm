@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ros/assert.h>
+#include <ros/ros.h>
 
 #include <sr_ur_controller/sr_ur_driver.hpp>
 #include "sr_ur_controller/sr_ur_hardware_messages.hpp"
@@ -93,6 +93,8 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
 
   ur_robot_state *robot_state = (ur_robot_state*)pdata;
 
+  // the range of motion of each robot joint is 2 full rotations
+  // if a value is reported outside these limits it's a communication error
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
     if (ntohd(&robot_state->actual_positions_[i]) >  4*M_PI ||
@@ -105,12 +107,13 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
 
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
-    rs_client->ur_->joint_positions_[i]      = ntohd(&robot_state->actual_positions_[i]);
-    rs_client->ur_->joint_velocities_[i]     = ntohd(&robot_state->actual_velocities_[i]);
-    rs_client->ur_->joint_motor_currents_[i] = ntohd(&robot_state->actual_currents_[i]);
+    rs_client->ur_->joint_positions_     [i] = ntohd(&robot_state->actual_positions_ [i]);
+    rs_client->ur_->joint_velocities_    [i] = ntohd(&robot_state->actual_velocities_[i]);
+    rs_client->ur_->joint_motor_currents_[i] = ntohd(&robot_state->actual_currents_  [i]);
     if (!rs_client->robot_state_received)
     {
       rs_client->ur_->target_positions_[i] = rs_client->ur_->joint_positions_[i];
+      rs_client->ur_->previous_targets_[i] = rs_client->ur_->joint_positions_[i];
     }
   }
   pthread_mutex_unlock(&rs_client->ur_->robot_state_mutex_);

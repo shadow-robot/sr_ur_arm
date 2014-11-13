@@ -23,6 +23,7 @@
 
 #define ROS_ASSERT_ENABLED
 #include <ros/ros.h>
+
 #include "sr_ur_controller/sr_ur_driver.hpp"
 #include "sr_ur_controller/sr_ur_robot_state_client.hpp"
 #include "sr_ur_controller/sr_ur_event_loop.hpp"
@@ -44,21 +45,28 @@ void UrRobotDriver::start()
   el_         ->ur_ = this;
 
   rs_client_->start();
-  el_->start();
+  el_       ->start();
 }
 
 void UrRobotDriver::stop()
 {
-  ROS_INFO("UrArmController stops communicating with %s robot", robot_side_);
+  ROS_INFO("UrArmController stops communicating with the %s robot", robot_side_);
 
-  free(robot_address_);
-  free(host_address_);
-  free(robot_side_);
+  el_         ->stop();
+  ctrl_server_->stop();
+  rs_client_  ->stop();
 
   delete rs_client_;
   delete el_;
   delete ctrl_server_;
   delete pr_loader_;
+}
+
+void UrRobotDriver::restart()
+{
+  ROS_INFO("UrArmController restarting communication with the %s robot", robot_side_);
+  stop();
+  start();
 }
 
 void UrRobotDriver::send_command()
