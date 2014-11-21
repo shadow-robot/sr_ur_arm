@@ -91,7 +91,7 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
     return;
   }
 
-  ur_robot_state *robot_state = (ur_robot_state*)pdata;
+  ur_robot_state *robot_state = (ur_robot_state*) pdata;
 
   // the range of motion of each robot joint is 2 full rotations
   // if a value is reported outside these limits it's a communication error

@@ -5,19 +5,19 @@
   <arg name="debug" default="false"/>
 
   <!-- Loads the robot description -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find moley_description)/urdf/moley.urdf.xacro'"/>
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find sr_ur_description)/urdf/ur10.urdf.xacro'"/>
 
   <!-- low level controllers for right and left arm and a higher level trajectory controller -->
   <rosparam command="load" file="$(find sr_ur_controller)/config/left_ur_arm_controller.yaml"/>
   <rosparam command="load" file="$(find sr_ur_controller)/config/right_ur_arm_controller.yaml"/>
   <rosparam command="load" file="$(find moley_launch)/config/joint_trajectory_controller.yaml"/>
   <node name="arm_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="ra_sr_ur_controller la_sr_ur_controller"/>
-  <node name="traj_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--stopped robot_trajectory_controller"/>
+  <node name="traj_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="-stopped robot_trajectory_controller"/>
   
     <!-- real time control loop -->
   <group if="$(arg debug)">
     <node name="realtime_loop" pkg="ros_ethercat_loop" type="ros_ethercat_loop" args="-i _ -r robot_description" output="screen"
-      launch-prefix="ros_grant gdb -ex run -args"/>
+      launch-prefix="gdb -ex run -args"/>
   </group>
   <group unless="$(arg debug)">
     <node name="realtime_loop" pkg="ros_ethercat_loop" type="ros_ethercat_loop" args="-i _ -r robot_description" output="screen"

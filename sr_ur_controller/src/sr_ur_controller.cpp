@@ -30,7 +30,6 @@
 PLUGINLIB_EXPORT_CLASS(sr_ur::UrArmController, controller_interface::ControllerBase)
 
 using namespace std;
-const int UR_PERIOD = 16;
 
 namespace sr_ur
 {
@@ -135,7 +134,6 @@ void UrArmController::update(const ros::Time&, const ros::Duration&)
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
     {
       ur_.target_positions_[i] = joint_states_[i]->commanded_position_;
-      enforceLimits(ur_.target_positions_);
     }
     pthread_mutex_unlock(&ur_.write_mutex_);
 
@@ -160,7 +158,7 @@ void UrArmController::enforceLimits(double *targets)
     targets[i] = min(targets[i], joint_states_[i]->joint_->limits->upper);
     targets[i] = max(targets[i], joint_states_[i]->joint_->limits->lower);
 
-    double desired_velocity = (targets[i] - ur_.previous_targets_[i])/UR_PERIOD;
+    double desired_velocity = (targets[i] - ur_.previous_targets_[i]) / (UR_PERIOD/1000.0);
     if ((targets[i] > ur_.previous_targets_[i] &&
          desired_velocity >  joint_states_[i]->joint_->limits->velocity) ||
         (targets[i] < ur_.previous_targets_[i] &&

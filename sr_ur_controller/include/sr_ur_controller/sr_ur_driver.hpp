@@ -38,6 +38,8 @@ const char ur_joints[NUM_OF_JOINTS][sizeof("shoulder_lift_joint")] = {"shoulder_
                                                                       "wrist_2_joint",
                                                                       "wrist_3_joint"};
 
+const int UR_PERIOD = 16; // msec
+
 struct UrEventLoop;
 struct UrControlServer;
 struct UrRobotStateClient;
