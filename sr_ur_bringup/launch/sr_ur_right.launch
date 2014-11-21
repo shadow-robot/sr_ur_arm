@@ -5,7 +5,7 @@
   <arg name="debug" default="false"/>
   
   <!-- Loads the robot description -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find sr_ur_description)/urdf/ur10.urdf.xacro'"/>
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find sr_ur_description)/urdf/biarm.urdf.xacro'"/>
   
   <!-- right arm controller -->
   <rosparam command="load" file="$(find sr_ur_controller)/config/right_ur_arm_controller.yaml"/>
