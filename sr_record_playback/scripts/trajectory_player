@@ -1,92 +1,93 @@
 #!/usr/bin/env python
-from rospy import init_node, signal_shutdown, Duration, loginfo, logfatal
-from actionlib import SimpleActionClient
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
-from sys import argv
-from pymongo import MongoClient
-
 """
-Plays back a recorded trajectory
+Connects to a database, retrieves by name one or more trajectories of ur arms or shadow hands 
+and passes them to the respective robot 
 example usage
 
-./trajectory_player trajectory.txt
+./trajectory_player ur_right_trajectory rh_trajectory
 
 """
+from actionlib import SimpleActionClient
+from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
+from pymongo import MongoClient
+from rospy import init_node, signal_shutdown, Duration, loginfo, logfatal
+from sys import argv
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
-class SrUrTrajectoryPlayer(object):
+class SrTrajectoryPlayer(object):
 
-    def __init__(self):
+    def __init__(self, robot_name):
         self.mongo_client = MongoClient()
-        
-        self.ra_client = SimpleActionClient(
-            'ra_follow_joint_trajectory', FollowJointTrajectoryAction)
-        self.ra_trajectory_goal = FollowJointTrajectoryGoal()
-        self.ra_trajectory_goal.trajectory = JointTrajectory()
-        self.ra_trajectory_goal.trajectory.joint_names = ['ra_shoulder_pan_joint',
-                                                          'ra_shoulder_lift_joint',
-                                                          'ra_elbow_joint',
-                                                          'ra_wrist_1_joint',
-                                                          'ra_wrist_2_joint',
-                                                          'ra_wrist_3_joint']
-        self.ra_velocities = [0] * 6
+        self.name = robot_name
 
-        self.la_client = SimpleActionClient(
-            'la_follow_joint_trajectory', FollowJointTrajectoryAction)
-        self.la_trajectory_goal = FollowJointTrajectoryGoal()
-        self.la_trajectory_goal.trajectory = JointTrajectory()
-        self.la_trajectory_goal.trajectory.joint_names = ['la_shoulder_pan_joint',
-                                                          'la_shoulder_lift_joint',
-                                                          'la_elbow_joint',
-                                                          'la_wrist_1_joint',
-                                                          'la_wrist_2_joint',
-                                                          'la_wrist_3_joint']
-        self.la_velocities = [0] * 6
+        self.action_client = SimpleActionClient(
+            'robot_trajectory_controller', FollowJointTrajectoryAction)
+        self.trajectory_goal = FollowJointTrajectoryGoal()
+        self.trajectory_goal.trajectory = JointTrajectory()
+
+        self.actors_to_prefix = {
+            "right arm": "ra_", "left arm": "la_", "right hand": "rh_", "left hand": "lh_"}
+
+        self.parse_trajectory()
+        loginfo("Trajectory parsed")
+
+        loginfo("Waiting for server...")
+        self.action_client.wait_for_server()
+        loginfo("Connected to server")
 
     def parse_trajectory(self):
-        self.ra_trajectory_goal.trajectory.points = []
-        self.la_trajectory_goal.trajectory.points = []
-        with open(argv[1]) as trajectory_text_file:
-            for traj_point_text in trajectory_text_file:
-                data = traj_point_text.split(',')
+        self.trajectory_goal.trajectory.points = []
+        self.velocities = []
 
-                time_from_start_ = Duration(float(data[0]))
+        data = mongo_client.trajectories.trajectories
+        type = data.find({"name": self.name}, {"type": "true"})[0]['type']
+        if type != 'action':
+            logfatal("name provided doesn't refer to action type data")
+            return
 
-                ra_positions_ = [float(i) for i in data[1:7]]
-                self.ra_trajectory_goal.trajectory.points.append(JointTrajectoryPoint(
-                    positions=ra_positions_, velocities=self.ra_velocities, time_from_start=time_from_start_))
-                la_positions_ = [float(i) for i in data[7:13]]
-                self.la_trajectory_goal.trajectory.points.append(JointTrajectoryPoint(
-                    positions=la_positions_, velocities=self.la_velocities, time_from_start=time_from_start_))
+        actor = data.find({"name": self.name}, {"actor": "true"})[0]['actor']
+        if actor not in self.actors_to_prefix:
+            logfatal("name provided doesn't refer to a valid actor")
+            return
 
-    def play_trajectory(self):
-        self.ra_client.send_goal(self.ra_trajectory_goal)
-        self.la_client.send_goal(self.la_trajectory_goal)
+        prefix = self.actors_to_prefix[actor]
+        joints = data.find(
+            {"name": self.name}, {"joints": "true"})[0]['joints']
+        self.trajectory_goal.trajectory.joint_names = [
+            prefix + jnt for jnt in joints]
+
+        for traj_point_text in trajectory_text_file:
+            data = traj_point_text.split(',')
+
+            time_from_start_ = Duration(float(data[0]))
+
+            ra_positions_ = [float(i) for i in data[1:7]]
+            self.ra_trajectory_goal.trajectory.points.append(JointTrajectoryPoint(
+                positions=ra_positions_, velocities=self.ra_velocities, time_from_start=time_from_start_))
+            la_positions_ = [float(i) for i in data[7:13]]
+            self.la_trajectory_goal.trajectory.points.append(JointTrajectoryPoint(
+                positions=la_positions_, velocities=self.la_velocities, time_from_start=time_from_start_))
+
+    def play(self):
+        self.action_client.send_goal(self.trajectory_goal)
+
+    def wait_to_complete(self):
         try:
-            self.ra_client.wait_for_result()
-            self.la_client.wait_for_result()
+            self.action_client.wait_for_result()
         except KeyboardInterrupt:
-            self.ra_client.cancel_goal()
-            self.la_client.cancel_goal()
+            self.action_client.cancel_goal()
             raise
-
-    def run(self):
-        try:
-            init_node("TrajectoryPlayer", anonymous=True, disable_signals=True)
-            loginfo("Waiting for server...")
-            self.ra_client.wait_for_server()
-            self.la_client.wait_for_server()
-            loginfo("Connected to server. Reading trajectory")
-            self.parse_trajectory()
-            loginfo("Trajectory parsed. Start playing")
-            self.play_trajectory()
-        except (KeyboardInterrupt, SystemExit):
-            signal_shutdown("KeyboardInterrupt")
-            raise
-
 
 if __name__ == '__main__':
-    trajectory_player = SrUrTrajectoryPlayer()
-    trajectory_player.run()
+    init_node("TrajectoryPlayer", anonymous=True, disable_signals=True)
+
+    players = [SrTrajectoryPlayer(name) for name in argv[1:]]
+
+    for player in players:
+        player.play()
+
+    for player in players:
+        player.wait_to_complete()
+
     loginfo("Completed trajectory")
