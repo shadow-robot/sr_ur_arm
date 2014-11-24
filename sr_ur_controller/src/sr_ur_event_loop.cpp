@@ -70,7 +70,9 @@ void UrEventLoop::start()
   status = pthread_attr_setschedparam(&attr, &thread_param);
   ROS_ASSERT(0 == status);
 
-  status = pthread_create(&asynchronous_io_, NULL, asynchronous_io_loop, this);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+  status = pthread_create(&asynchronous_io_, &attr, asynchronous_io_loop, this);
   ROS_ASSERT(0 == status);
 
   status = pthread_attr_destroy(&attr);
@@ -85,6 +87,11 @@ void UrEventLoop::stop()
   ROS_ASSERT(ur_);
 
   uv_stop(event_loop_);
+
+  // wait for event_loop_ to actually terminate before deleting
+  void *value;
+  pthread_join(asynchronous_io_, &value);
+
   uv_loop_delete(event_loop_);
 }
 
