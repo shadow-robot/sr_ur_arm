@@ -12,7 +12,7 @@
   <rosparam command="load" file="$(find moley_launch)/config/la_trajectory_controller.yaml"/>
 
   <node name="arm_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="la_sr_ur_controller"/>
-  <node name="traj_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="-stopped la_trajectory_controller"/>
+  <node name="traj_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--stopped la_trajectory_controller"/>
   
   <!-- real time control loop -->
   <group if="$(arg debug)">
