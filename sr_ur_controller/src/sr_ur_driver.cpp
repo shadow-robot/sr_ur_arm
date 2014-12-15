@@ -73,3 +73,8 @@ void UrRobotDriver::send_command()
 {
   ctrl_server_->send_servo_command();
 }
+
+void UrRobotDriver::send_teach_mode_command(bool teach_mode)
+{
+  ctrl_server_->send_teach_mode_command((int32_t)teach_mode);
+}
