@@ -93,7 +93,7 @@ static void received_response_cb(uv_stream_t* command_stream,
   if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Stop") == 0)
   {
     ROS_INFO("Asking %s robot to reset the teach mode", ctrl_server->ur_->robot_side_);
-    ctrl_server->send_message(MSG_SET_TEACH_MODE);
+    ctrl_server->send_teach_mode_command(0);
     return;
   }
 
@@ -181,7 +181,7 @@ void UrControlServer::stop()
   ROS_ASSERT(ur_);
   ROS_INFO("UrArmController of %s robot stops the control server", ur_->robot_side_);
   send_message(MSG_STOPJ);
-  send_message(MSG_SET_TEACH_MODE);
+  send_teach_mode_command(0);
 
   pthread_mutex_destroy(&ur_->write_mutex_);
 
@@ -226,6 +226,25 @@ void UrControlServer::send_message(int32_t ur_msg_type)
   memset(telegram, 0, sizeof(ur_servoj));
   telegram->message_type_ = htonl(ur_msg_type);
 
+  int status = uv_write(&write_request_,
+                        (uv_stream_t*)&command_stream_,
+                        &command_buffer_,
+                        1,
+                        command_sent_cb);
+  ROS_ASSERT(0 == status);
+
+}
+
+void UrControlServer::send_teach_mode_command(int32_t teach_mode)
+{
+  ROS_ASSERT(ur_);
+
+  ur_set_teach_mode *telegram = (ur_set_teach_mode*)command_buffer_.base;
+  //We are using the same command_buffer_ used for servoj, so we zero the whole buffer
+  //The ur_robot_program doesn't check the total length of the msg, so this is OK
+  memset(telegram, 0, command_buffer_.len);
+  telegram->message_type_ = htonl(MSG_SET_TEACH_MODE);
+  telegram->teach_mode_ = teach_mode;
   int status = uv_write(&write_request_,
                         (uv_stream_t*)&command_stream_,
                         &command_buffer_,
