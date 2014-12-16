@@ -37,8 +37,10 @@ struct UrControlServer
 
   uv_buf_t   command_buffer_;
   uv_buf_t   response_buffer_;
+  uv_buf_t   teach_command_buffer_;
 
   uv_write_t write_request_;
+  uv_write_t teach_command_write_request_;
 
   void start();
   void stop();

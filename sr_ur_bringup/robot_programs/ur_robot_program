@@ -4,18 +4,44 @@ def driverProg():
   MSG_SERVOJ = 5
   MSG_SET_TEACH_MODE = 7
   MULT = 10000.0
+  SERVO_IDLE = 0
+  SERVO_RUNNING = 1
+  TEACH_MODE = 2
+  state = SERVO_IDLE
   commanded_positions = get_actual_joint_positions()
+  def set_commanded_positions(q):
+    enter_critical
+    # while in TEACH_MODE, the servo commands will be ignored
+    if state != TEACH_MODE:
+      state = SERVO_RUNNING
+    end
+    commanded_positions = q
+    exit_critical
+  end
   thread servoThread():
     while True:
       enter_critical
       q = commanded_positions
       exit_critical
-      servoj(q, 0, 0, 0.016)
+      
+      if state == SERVO_RUNNING:
+        enter_critical
+        # here we check again, as the state could have changed to teach mode while running the servoj
+        if state != TEACH_MODE:
+          state = SERVO_IDLE
+        end
+        exit_critical
+        servoj(q, 0, 0, 0.016)
+      else:
+        sync()
+      end
     end
   end
   socket_open("%s", %d)
   socket_send_string("Connected")
   thread_servo = run servoThread()
+  # Set the Shadow hand mass (Kg) and centre of gravity (m)
+  set_payload(4.3, [0.0, 0.0, 0.12])
   while True:
     telegram = socket_read_binary_integer(7)
     if telegram[0] == 7:
@@ -30,20 +56,25 @@ def driverProg():
              telegram[5]/MULT,
              telegram[6]/MULT,
              telegram[7]/MULT]
-        enter_critical
-        commanded_positions = q
-        exit_critical
+        set_commanded_positions(q)
       elif msg_type == MSG_STOPJ:
         socket_send_string("Stop")
-        enter_critical
-        commanded_positions = get_actual_joint_positions()
-        exit_critical
+        stopj(1.0)
       elif msg_type == MSG_SET_TEACH_MODE:
-        socket_send_string("Teach mode")
         if telegram[2] != 0:
+          enter_critical
+          state = TEACH_MODE
+          exit_critical
+          # allow some time for the currently running servoj command to finish
+          sleep(2.0)
           teach_mode()
+          socket_send_string("Teach mode ON")
         else:
           end_teach_mode()
+          enter_critical
+          state = SERVO_IDLE
+          exit_critical
+          socket_send_string("Teach mode OFF")
         end
       else:
         socket_send_string("Error")
