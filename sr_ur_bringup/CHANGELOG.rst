@@ -2,8 +2,8 @@
 Changelog for package sr_ur_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2014-12-17)
+------------------
 * fix dash
 * launch trajectory controllers
 * rename urdf to avoid conflict

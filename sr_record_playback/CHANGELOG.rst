@@ -2,8 +2,8 @@
 Changelog for package sr_trajectory_record_playback
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2014-12-17)
+------------------
 * ups
 * implement reading trajectories from a mongo database
 * add mongodb_store dependency

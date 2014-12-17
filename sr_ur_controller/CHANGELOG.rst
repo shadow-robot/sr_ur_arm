@@ -2,8 +2,8 @@
 Changelog for package sr_ur_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2014-12-17)
+------------------
 * better termination of event loop
 * include urdfs
 * add position and speed limits

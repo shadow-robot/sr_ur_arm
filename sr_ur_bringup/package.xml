@@ -1,6 +1,6 @@
 <package>
   <name>sr_ur_bringup</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>launch files and robot programs</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 

@@ -1,6 +1,6 @@
 <package>
   <name>sr_ur_arm</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>Control a UR arm from ros_ethercat package</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
