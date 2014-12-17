@@ -30,6 +30,7 @@
 #include <ros_ethercat_model/robot_state.hpp>
 #include <realtime_tools/realtime_publisher.h>
 #include <sr_ur_controller/sr_ur_driver.hpp>
+#include <sr_ur_msgs/SetTeachMode.h>
 
 namespace sr_ur
 {
@@ -62,7 +63,10 @@ protected:
 
   void enforceLimits(double *targets);
   virtual void setCommandCB(const std_msgs::Float64MultiArrayConstPtr& msg);
+  bool setTeachMode(sr_ur_msgs::SetTeachMode::Request &req, sr_ur_msgs::SetTeachMode::Response &resp);
 
+  bool teach_mode_;
+  ros::ServiceServer set_teach_mode_server_;
   ros::Subscriber sub_command_;
 };
 }

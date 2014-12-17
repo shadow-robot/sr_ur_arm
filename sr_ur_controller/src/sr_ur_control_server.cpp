@@ -93,15 +93,21 @@ static void received_response_cb(uv_stream_t* command_stream,
   if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Stop") == 0)
   {
     ROS_INFO("Asking %s robot to reset the teach mode", ctrl_server->ur_->robot_side_);
-    ctrl_server->send_message(MSG_SET_TEACH_MODE);
+    ctrl_server->send_teach_mode_command(0);
     return;
   }
 
-  if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Teach mode") == 0)
+  if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Teach mode OFF") == 0)
   {
     ROS_WARN("%s robot is ready to receive servo commands", ctrl_server->ur_->robot_side_);
     memset(buffer.base, 0, RESPONSE_SIZE);
     ctrl_server->ur_->robot_ready_to_move_ = true;
+  }
+
+  if (strcmp(buffer.base, "Teach mode ON") == 0)
+  {
+    ROS_WARN("%s robot is now in teach mode", ctrl_server->ur_->robot_side_);
+    memset(buffer.base, 0, RESPONSE_SIZE);
   }
 }
 
@@ -158,11 +164,16 @@ void UrControlServer::start()
   server_stream_.data   = (void*)this;
   command_stream_.data  = (void*)this;
   write_request_.data   = (void*)this;
+  teach_command_write_request_.data = (void*)this;
 
   command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
   command_buffer_.len   = sizeof(ur_servoj);
   response_buffer_.base = (char*)malloc(RESPONSE_SIZE);
   response_buffer_.len  = RESPONSE_SIZE - 1;
+  // IMPORTANT: we allocate the same number of bytes even if ur_set_teach_mode is smaller
+  // the reason is that the ur_robot_program expects messages of a unique size (7 bytes)
+  teach_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  teach_command_buffer_.len   = sizeof(ur_servoj);
 
   status = uv_listen((uv_stream_t*)&server_stream_, 1, received_connection_cb);
   ROS_ASSERT(0 == status);
@@ -181,7 +192,7 @@ void UrControlServer::stop()
   ROS_ASSERT(ur_);
   ROS_INFO("UrArmController of %s robot stops the control server", ur_->robot_side_);
   send_message(MSG_STOPJ);
-  send_message(MSG_SET_TEACH_MODE);
+  send_teach_mode_command(0);
 
   pthread_mutex_destroy(&ur_->write_mutex_);
 
@@ -192,6 +203,7 @@ void UrControlServer::stop()
 
   free(command_buffer_.base);
   free(response_buffer_.base);
+  free(teach_command_buffer_.base);
 }
 
 void UrControlServer::send_servo_command()
@@ -229,6 +241,26 @@ void UrControlServer::send_message(int32_t ur_msg_type)
   int status = uv_write(&write_request_,
                         (uv_stream_t*)&command_stream_,
                         &command_buffer_,
+                        1,
+                        command_sent_cb);
+  ROS_ASSERT(0 == status);
+
+}
+
+void UrControlServer::send_teach_mode_command(int32_t teach_mode)
+{
+  ROS_ASSERT(ur_);
+
+  ROS_WARN("Set %s robot teach_mode = %d", ur_->robot_side_, teach_mode);
+
+  ur_set_teach_mode *telegram = (ur_set_teach_mode*)teach_command_buffer_.base;
+  //We are using a different uv_buf_t than the one used for servoj,
+  memset(telegram, 0, teach_command_buffer_.len);
+  telegram->message_type_ = htonl(MSG_SET_TEACH_MODE);
+  telegram->teach_mode_ = teach_mode;
+  int status = uv_write(&teach_command_write_request_,
+                        (uv_stream_t*)&command_stream_,
+                        &teach_command_buffer_,
                         1,
                         command_sent_cb);
   ROS_ASSERT(0 == status);

@@ -34,7 +34,7 @@ using namespace std;
 namespace sr_ur
 {
 UrArmController::UrArmController() :
-    robot_(NULL), loop_count_(0), ur_()
+    robot_(NULL), loop_count_(0), ur_(), teach_mode_(false)
 {
 }
 
@@ -90,6 +90,7 @@ bool UrArmController::init(ros_ethercat_model::RobotState* robot, ros::NodeHandl
   ur_.host_address_       = strdup(control_pc_ip_address.c_str());
   ur_.robot_program_path_ = strdup(robot_program_path_param.c_str());
 
+  set_teach_mode_server_ = node_.advertiseService("set_teach_mode", &UrArmController::setTeachMode, this);
   return true;
 }
 
@@ -112,32 +113,54 @@ void UrArmController::update(const ros::Time&, const ros::Duration&)
 {
   if (loop_count_++ > UR_PERIOD)
   {
-    pthread_mutex_lock(&ur_.robot_state_mutex_);
-    for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
+    if (teach_mode_)
     {
-      joint_states_[i]->position_ = ur_.joint_positions_     [i];
-      joint_states_[i]->velocity_ = ur_.joint_velocities_    [i];
-      joint_states_[i]->effort_   = ur_.joint_motor_currents_[i];
+      pthread_mutex_lock(&ur_.robot_state_mutex_);
+      for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
+      {
+        joint_states_[i]->position_ = ur_.joint_positions_     [i];
+        joint_states_[i]->velocity_ = ur_.joint_velocities_    [i];
+        joint_states_[i]->effort_   = ur_.joint_motor_currents_[i];
+        // TODO replace this condition to access rs_client->robot_state_received
+        // it would make more sense here but now is not accessible.
+        // robot_ready_to_move_ will do the job as it is set after robot_state_received
+        if (ur_.robot_ready_to_move_)
+        {
+          // Keep updating commanded_position_ so that when teach mode is switched off the robot stays where it was
+          joint_states_[i]->commanded_position_ = ur_.joint_positions_[i];
+        }
+      }
+      pthread_mutex_unlock(&ur_.robot_state_mutex_);
+    }
+    else
+    {
+      pthread_mutex_lock(&ur_.robot_state_mutex_);
+      for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
+      {
+        joint_states_[i]->position_ = ur_.joint_positions_     [i];
+        joint_states_[i]->velocity_ = ur_.joint_velocities_    [i];
+        joint_states_[i]->effort_   = ur_.joint_motor_currents_[i];
+        if (!ur_.robot_ready_to_move_)
+        {
+          joint_states_[i]->commanded_position_ = ur_.target_positions_[i];
+        }
+      }
+      pthread_mutex_unlock(&ur_.robot_state_mutex_);
+
       if (!ur_.robot_ready_to_move_)
       {
-        joint_states_[i]->commanded_position_ = ur_.target_positions_[i];
+        return;
       }
-    }
-    pthread_mutex_unlock(&ur_.robot_state_mutex_);
 
-    if (!ur_.robot_ready_to_move_)
-    {
-      return;
-    }
+      pthread_mutex_lock(&ur_.write_mutex_);
+      for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
+      {
+        ur_.target_positions_[i] = joint_states_[i]->commanded_position_;
+      }
+      pthread_mutex_unlock(&ur_.write_mutex_);
 
-    pthread_mutex_lock(&ur_.write_mutex_);
-    for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
-    {
-      ur_.target_positions_[i] = joint_states_[i]->commanded_position_;
+      ur_.send_command();
     }
-    pthread_mutex_unlock(&ur_.write_mutex_);
-
-    ur_.send_command();
 
     loop_count_ = 0;
   }
@@ -167,6 +190,14 @@ void UrArmController::enforceLimits(double *targets)
       targets[i] = UR_PERIOD*joint_states_[i]->joint_->limits->velocity + ur_.previous_targets_[i];
     }
   }
+}
+
+bool UrArmController::setTeachMode(sr_ur_msgs::SetTeachMode::Request &req, sr_ur_msgs::SetTeachMode::Response &resp)
+{
+  teach_mode_ = req.teach_mode;
+  ur_.send_teach_mode_command(teach_mode_);
+  resp.success = true;
+  return true;
 }
 
 }

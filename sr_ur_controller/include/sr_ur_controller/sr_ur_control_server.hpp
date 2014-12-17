@@ -37,8 +37,10 @@ struct UrControlServer
 
   uv_buf_t   command_buffer_;
   uv_buf_t   response_buffer_;
+  uv_buf_t   teach_command_buffer_;
 
   uv_write_t write_request_;
+  uv_write_t teach_command_write_request_;
 
   void start();
   void stop();
@@ -46,8 +48,11 @@ struct UrControlServer
   // send a servo command to the robot
   void send_servo_command();
 
-  // sends a non servo message to the robot
+  // sends a non servo, parameterless message to the robot
   void send_message(int32_t ur_msg_type);
+
+  // sends a teach_mode on-off command to the robot
+  void send_teach_mode_command(int32_t teach_mode);
 };
 
 #endif
