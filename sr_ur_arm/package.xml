@@ -1,12 +1,12 @@
 <package>
   <name>sr_ur_arm</name>
-  <version>0.1.0</version>
+  <version>0.0.0</version>
   <description>Control a UR arm from ros_ethercat package</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
   <license>BSD</license>
   <license>GPL</license>
-  
+
   <url type="website">http://ros.org/wiki/sr_ur_arm</url>
   <url type="repository">https://github.com/shadow-robot/sr_ur_arm</url>
   <url type="bugtracker">https://github.com/shadow-robot/sr_ur_arm/issues</url>

@@ -1,6 +1,6 @@
 <package>
   <name>sr_trajectory_record_playback</name>
-  <version>0.1.0</version>
+  <version>0.0.0</version>
   <description>trajectory record and playback scripts</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
@@ -13,14 +13,14 @@
   <author>Manos Nikoladis</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  
+
   <build_depend>rospy</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>control_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
   <build_depend>mongodb_store</build_depend>
-  
+
   <run_depend>rospy</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>control_msgs</run_depend>
