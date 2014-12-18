@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>sr_ur_msgs</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>Contains messages for the ur arm controller</description>
 
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>

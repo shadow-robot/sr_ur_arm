@@ -2,8 +2,8 @@
 Changelog for package sr_ur_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2014-12-18)
+------------------
 * Add set_teach_mode service
 * Contributors: Toni Oliver
 
