@@ -96,6 +96,9 @@ struct UrRobotDriver
 
   // write commands to the robot
   void send_command();
+
+  // send the command to set teach mode on/off to the robot
+  void send_teach_mode_command(bool teach_mode);
 };
 
 #endif
