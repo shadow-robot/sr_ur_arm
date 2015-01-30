@@ -37,6 +37,15 @@ def driverProg():
       end
     end
   end
+  
+  # open socket to send the command to set the speed percentage
+  socket_open("127.0.0.1", 30002, socket name="socket_1")
+  socket_send_string("set speed", socket name="socket_1")
+  socket_send_string("0.5", socket name="socket_1")
+  socket_send_byte(10, socket name="socket_1")
+  socket_close(socket name="socket_1")
+  
+  # open socket to receive commands from host
   socket_open("%s", %d)
   socket_send_string("Connected")
   thread_servo = run servoThread()
