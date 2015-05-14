@@ -28,6 +28,20 @@
 #include <uv.h>
 #include "sr_ur_controller/sr_ur_driver.hpp"
 
+#define WRITE_POOL_SIZE 10
+
+struct UvWritePool
+{
+  uv_write_t write_request_[WRITE_POOL_SIZE];
+  size_t next_;
+  size_t size_;
+
+  void init(void* ptr);
+  bool is_full();
+  void inc();
+  void dec();
+};
+
 struct UrControlServer
 {
   UrRobotDriver *ur_;
@@ -39,6 +53,7 @@ struct UrControlServer
   uv_buf_t   response_buffer_;
   uv_buf_t   teach_command_buffer_;
 
+  UvWritePool write_request_pool_;
   uv_write_t write_request_;
   uv_write_t teach_command_write_request_;
 
