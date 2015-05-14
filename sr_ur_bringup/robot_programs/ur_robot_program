@@ -52,6 +52,9 @@ def driverProg():
   thread_servo = run servoThread()
   # Set the Shadow hand mass (Kg) and centre of gravity (m)
   set_payload(4.55, [0.0, 0.0, 0.12])
+  # payload if nothing is attached to the arm
+  #set_payload(0.0, [0.0, 0.0, 0.0])
+  # payload for hand adapting plate only
   #set_payload(0.050, [0.0, 0.0, 0.20])
   while True:
     telegram = socket_read_binary_integer(7)
@@ -76,15 +79,16 @@ def driverProg():
           enter_critical
           state = TEACH_MODE
           exit_critical
-          # allow some time for the currently running servoj command to finish
-          sleep(5.0)
+          kill thread_servo
           teach_mode()
           socket_send_string("Teach mode ON")
         else:
           end_teach_mode()
+          kill thread_servo
           enter_critical
           state = SERVO_IDLE
           exit_critical
+          thread_servo = run servoThread()
           socket_send_string("Teach mode OFF")
         end
       else:
@@ -94,4 +98,3 @@ def driverProg():
   end
   socket_close()
 end
-driverProg()
