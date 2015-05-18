@@ -70,6 +70,7 @@ static void servo_command_sent_cb(uv_write_t* write_request, int status)
   // protect with mutex the decrement of the pool size
   pthread_mutex_lock(&((UrControlServer*)write_request->data)->ur_->write_mutex_);
   ((UrControlServer*)write_request->data)->write_request_pool_.dec();
+  ROS_WARN("CB Next: %zu Size: %zu", ((UrControlServer*)write_request->data)->write_request_pool_.next_, ((UrControlServer*)write_request->data)->write_request_pool_.size_);
   pthread_mutex_unlock(&((UrControlServer*)write_request->data)->ur_->write_mutex_);
 }
 
@@ -239,13 +240,30 @@ void UrControlServer::send_servo_command()
     telegram->commanded_positions_[i] =
         htonl((int32_t)(MULT_JOINTSTATE * ur_->target_positions_[i]));
   }
-
+  ROS_INFO("buffer addr: %p length: %zu", command_buffer_.base, command_buffer_.len);
   int status = uv_write(&(write_request_pool_.write_request_[write_request_pool_.next_]),
                         (uv_stream_t*)&command_stream_,
                         &command_buffer_,
                         1,
                         servo_command_sent_cb);
+  if (status==0)
+  {
+    int nbuff = write_request_pool_.write_request_[write_request_pool_.next_].bufcnt;
+//    ROS_ERROR("[%zu] write req nbuff: %d", write_request_pool_.next_, nbuff);
+//    uv_buf_t* ptr1 = write_request_pool_.write_request_[write_request_pool_.next_].bufs;
+//    ROS_ERROR("[%zu] write req nbuff: %d addr : %p", write_request_pool_.next_, nbuff, ptr1);
+//    uv_buf_t* ptr2 = write_request_pool_.write_request_[write_request_pool_.next_].bufsml;
+//    ROS_ERROR("[%zu] write req nbuff: %d addr : %p", write_request_pool_.next_, nbuff, ptr2);
+    char* ptr = write_request_pool_.write_request_[write_request_pool_.next_].bufsml[0].base;
+    size_t len = write_request_pool_.write_request_[write_request_pool_.next_].bufsml[0].len;
+    ROS_ERROR("[%zu] write req nbuff: %d addr : %p length: %zu", write_request_pool_.next_, nbuff, ptr, len);
+  }
+  for (size_t j = 0; j < WRITE_POOL_SIZE; ++j)
+  {
+    ROS_INFO("[%zu] write req nbuff: %d addr : %p length: %zu", j, write_request_pool_.write_request_[j].bufcnt, write_request_pool_.write_request_[j].bufsml[0].base, write_request_pool_.write_request_[j].bufsml[0].len);
+  }
   write_request_pool_.inc();
+  ROS_WARN("Send Next: %zu Size: %zu", write_request_pool_.next_, write_request_pool_.size_);
   pthread_mutex_unlock(&ur_->write_mutex_);
   ROS_ASSERT(0 == status);
 }
