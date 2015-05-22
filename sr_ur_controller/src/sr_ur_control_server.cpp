@@ -149,6 +149,43 @@ static void received_connection_cb(uv_stream_t* server_stream, int status)
            ctrl_server->ur_->robot_side_);
 }
 
+// sends a servo command.
+// this callback is called from libuv main thread in response to uv_async_send calls made from other threads
+// uv_async_send is the only thread safe libuv call
+static void send_servo_command_async_cb(uv_async_t* handle, int status)
+{
+  UrControlServer *ctrl_server = (UrControlServer*)handle->data;
+  ROS_ASSERT(ctrl_server->ur_);
+
+  if (ctrl_server->write_request_pool_.is_full())
+  {
+    ROS_ERROR("UrArmController write request pool is full");
+    return;
+  }
+
+  ur_servoj *telegram = (ur_servoj*)ctrl_server->command_buffer_.base;
+  memset(telegram, 0, sizeof(ur_servoj));
+  telegram->message_type_ = htonl(MSG_SERVOJ);
+
+  pthread_mutex_lock(&ctrl_server->ur_->write_mutex_);
+  for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
+  {
+    telegram->commanded_positions_[i] =
+        htonl((int32_t)(MULT_JOINTSTATE * ctrl_server->ur_->target_positions_[i]));
+  }
+
+  int write_status = uv_write(&(ctrl_server->write_request_pool_.write_request_[ctrl_server->write_request_pool_.next_]),
+                        (uv_stream_t*)&ctrl_server->command_stream_,
+                        &ctrl_server->command_buffer_,
+                        1,
+                        servo_command_sent_cb);
+
+  ctrl_server->write_request_pool_.inc();
+
+  pthread_mutex_unlock(&ctrl_server->ur_->write_mutex_);
+  ROS_ASSERT(0 == status);
+}
+
 void UrControlServer::start()
 {
   ROS_ASSERT(ur_);
@@ -193,6 +230,9 @@ void UrControlServer::start()
   ROS_WARN("UrArmController of %s robot started server on address %s and listening on port %d",
            ur_->robot_side_, ur_->host_address_, reverse_port);
 
+  async_.data = (void*)this;
+  uv_async_init(ur_->el_->get_event_loop(), &async_, send_servo_command_async_cb);
+
   // after the robot program is loaded and has started running
   // it will attempt to connect on server_stream_
   ur_->pr_loader_->send_program(reverse_port);
@@ -221,33 +261,7 @@ void UrControlServer::stop()
 
 void UrControlServer::send_servo_command()
 {
-  ROS_ASSERT(ur_);
-
-  if (write_request_pool_.is_full())
-  {
-    ROS_ERROR("UrArmController write request pool is full");
-    return;
-  }
-
-  ur_servoj *telegram = (ur_servoj*)command_buffer_.base;
-  memset(telegram, 0, sizeof(ur_servoj));
-  telegram->message_type_ = htonl(MSG_SERVOJ);
-
-  pthread_mutex_lock(&ur_->write_mutex_);
-  for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
-  {
-    telegram->commanded_positions_[i] =
-        htonl((int32_t)(MULT_JOINTSTATE * ur_->target_positions_[i]));
-  }
-
-  int status = uv_write(&(write_request_pool_.write_request_[write_request_pool_.next_]),
-                        (uv_stream_t*)&command_stream_,
-                        &command_buffer_,
-                        1,
-                        servo_command_sent_cb);
-  write_request_pool_.inc();
-  pthread_mutex_unlock(&ur_->write_mutex_);
-  ROS_ASSERT(0 == status);
+  uv_async_send(&async_);
 }
 
 void UrControlServer::send_message(int32_t ur_msg_type)

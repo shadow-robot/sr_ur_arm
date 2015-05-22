@@ -31,7 +31,7 @@ def driverProg():
           state = SERVO_IDLE
         end
         exit_critical
-        servoj(q, 0, 0, 0.016)
+        servoj(q, 0, 0, 0.008)
       else:
         sync()
       end
@@ -51,9 +51,9 @@ def driverProg():
   socket_send_string("Connected")
   thread_servo = run servoThread()
   # Set the Shadow hand mass (Kg) and centre of gravity (m)
-  set_payload(4.55, [0.0, 0.0, 0.12])
+  #set_payload(4.55, [0.0, 0.0, 0.12])
   # payload if nothing is attached to the arm
-  #set_payload(0.0, [0.0, 0.0, 0.0])
+  set_payload(0.0, [0.0, 0.0, 0.0])
   # payload for hand adapting plate only
   #set_payload(0.050, [0.0, 0.0, 0.20])
   while True:

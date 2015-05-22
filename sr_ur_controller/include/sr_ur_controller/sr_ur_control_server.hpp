@@ -28,7 +28,7 @@
 #include <uv.h>
 #include "sr_ur_controller/sr_ur_driver.hpp"
 
-#define WRITE_POOL_SIZE 10
+#define WRITE_POOL_SIZE 5
 
 struct UvWritePool
 {
@@ -56,6 +56,8 @@ struct UrControlServer
   UvWritePool write_request_pool_;
   uv_write_t write_request_;
   uv_write_t teach_command_write_request_;
+
+  uv_async_t async_;
 
   void start();
   void stop();
