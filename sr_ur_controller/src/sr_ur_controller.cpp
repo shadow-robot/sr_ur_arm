@@ -111,7 +111,7 @@ void UrArmController::stopping(const ros::Time&)
 
 void UrArmController::update(const ros::Time&, const ros::Duration&)
 {
-  if (loop_count_++ > UR_PERIOD)
+  if (++loop_count_ >= UR_PERIOD)
   {
     if (teach_mode_)
     {
