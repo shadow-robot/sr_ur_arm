@@ -53,12 +53,24 @@ static uv_buf_t allocate_response_buffer(uv_handle_t* command_stream, size_t)
   return ctrl_server->response_buffer_;
 }
 
-// this is called after a new command has been sent to the robot
+// this is called after a new non-servo command has been sent to the robot
 // it just checks the status
 static void command_sent_cb(uv_write_t* write_request, int status)
 {
   ROS_ASSERT(0 == status);
   ROS_ASSERT(write_request);
+}
+
+// this is called after a new servo command has been sent to the robot
+// it just checks the status
+static void servo_command_sent_cb(uv_write_t* write_request, int status)
+{
+  ROS_ASSERT(0 == status);
+  ROS_ASSERT(write_request);
+  // protect with mutex the decrement of the pool size
+  pthread_mutex_lock(&((UrControlServer*)write_request->data)->ur_->write_mutex_);
+  ((UrControlServer*)write_request->data)->write_request_pool_.dec();
+  pthread_mutex_unlock(&((UrControlServer*)write_request->data)->ur_->write_mutex_);
 }
 
 // Called when the robot replies to a command that was sent earlier from the server to the host
@@ -165,6 +177,7 @@ void UrControlServer::start()
   command_stream_.data  = (void*)this;
   write_request_.data   = (void*)this;
   teach_command_write_request_.data = (void*)this;
+  write_request_pool_.init((void*)this);
 
   command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
   command_buffer_.len   = sizeof(ur_servoj);
@@ -210,6 +223,12 @@ void UrControlServer::send_servo_command()
 {
   ROS_ASSERT(ur_);
 
+  if (write_request_pool_.is_full())
+  {
+    ROS_ERROR("UrArmController write request pool is full");
+    return;
+  }
+
   ur_servoj *telegram = (ur_servoj*)command_buffer_.base;
   memset(telegram, 0, sizeof(ur_servoj));
   telegram->message_type_ = htonl(MSG_SERVOJ);
@@ -220,13 +239,14 @@ void UrControlServer::send_servo_command()
     telegram->commanded_positions_[i] =
         htonl((int32_t)(MULT_JOINTSTATE * ur_->target_positions_[i]));
   }
-  pthread_mutex_unlock(&ur_->write_mutex_);
 
-  int status = uv_write(&write_request_,
+  int status = uv_write(&(write_request_pool_.write_request_[write_request_pool_.next_]),
                         (uv_stream_t*)&command_stream_,
                         &command_buffer_,
                         1,
-                        command_sent_cb);
+                        servo_command_sent_cb);
+  write_request_pool_.inc();
+  pthread_mutex_unlock(&ur_->write_mutex_);
   ROS_ASSERT(0 == status);
 }
 
@@ -265,4 +285,46 @@ void UrControlServer::send_teach_mode_command(int32_t teach_mode)
                         command_sent_cb);
   ROS_ASSERT(0 == status);
 
+}
+
+void UvWritePool::init(void* ptr)
+{
+  for (size_t i = 0; i < WRITE_POOL_SIZE; i++)
+  {
+    write_request_[i].data = ptr;
+  }
+}
+
+bool UvWritePool::is_full()
+{
+  if (size_ < WRITE_POOL_SIZE)
+  {
+    return false;
+  }
+  return true;
+}
+
+void UvWritePool::inc()
+{
+  if (next_ < WRITE_POOL_SIZE - 1)
+  {
+    next_++;
+  }
+  else
+  {
+    next_ = 0;
+  }
+  size_++;
+}
+
+void UvWritePool::dec()
+{
+  if (size_ > 0)
+  {
+    size_--;
+  }
+  else
+  {
+    ROS_ERROR("UrArmController trying to decrement empty pool");
+  }
 }
