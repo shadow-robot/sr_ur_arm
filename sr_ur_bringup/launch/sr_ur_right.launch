@@ -9,7 +9,7 @@
   
   <!-- right arm controller -->
   <rosparam command="load" file="$(find sr_ur_controller)/config/right_ur_arm_controller.yaml"/>
-  <rosparam command="load" file="$(find moley_launch)/config/ra_trajectory_controller.yaml"/>
+  <rosparam command="load" file="$(find sr_robot_launch)/config/ra_trajectory_controller.yaml"/> 
 
   <node name="arm_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="ra_sr_ur_controller"/>
   <node name="traj_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--stopped ra_trajectory_controller"/>
