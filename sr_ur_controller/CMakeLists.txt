@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
     pluginlib
     controller_interface
     ros_ethercat_model
+    sr_ur_msgs
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -30,6 +31,7 @@ catkin_package(
 	    pluginlib
 	    controller_interface
 	    ros_ethercat_model
+	    sr_ur_msgs
 	INCLUDE_DIRS
 	    include
 	LIBRARIES
