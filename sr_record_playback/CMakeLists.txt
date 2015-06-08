@@ -18,7 +18,6 @@ catkin_package(
 )
 
 install(PROGRAMS
-		scripts/trajectory_player
 		scripts/trajectory_recorder
 		scripts/pose_mover
 		scripts/pose_recorder
@@ -28,4 +27,3 @@ install(PROGRAMS
 install(DIRECTORY trajectory_data/
 	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/trajectory_data
 )
-
