@@ -1,7 +1,17 @@
 sr_ur_arm
 ---------
 
-sr_ur_arm allows controlling a robot system with a Shadow Dexterous hand attached on a Universal Robots arm. A  controller for a UR CB3 arm (6DOF) is provided as a plugin according to the ros_control architecture. Communication with the arm with TCP/IP is handled asynchronously by libuv. Communication with the Shadow hand is handled with its standard drivers using EtherCAT and eml as the EtherCAT master. The control loop in ros_ethercat keeps both robots synchronized with the hand's controller updated every 1ms and the arm's updated every 8ms. The repository depends on Shadow's [fork](https://github.com/shadow-robot/universal_robot.git) of the ros_industrial drivers for UR, for things like the URDF description of the UR robot. Of course it also depends on the Shadow hand drivers for ROS. This repository is not needed if you have either a Shadow hand or UR robot by themselves.
+sr_ur_arm  controls a robot system made up from a Shadow Dexterous Hand and a Universal Robots (UR) arm. This requires a special control structure because the UR arm expects position control commands over TCP/IP at 125Hz, and the Shadow Hand expects output over EtherCAT from a 1kHz control loop.
+
+The controller for a UR model CB3 arm (6DOF) is provided as a plugin according to the ros_control architecture.
+
+Communication with the UR arm by TCP/IP is handled asynchronously by libuv. Communication with the Shadow Hand is handled with the standard drivers using EtherCAT and eml as the EtherCAT master.
+
+The control loop in ros_ethercat keeps both robots synchronized,  with the Hand's controller updated every 1ms and the UR arm's controller updated every 8ms.
+
+The repository depends on Shadow's [fork](https://github.com/shadow-robot/universal_robot.git) of the ros_industrial drivers for UR, for things like the URDF description of the UR robot, and the Shadow hand drivers for ROS.
+
+This repository is not needed if you have either a Shadow hand or UR robot by themselves.
 
 ### sr_ur_program_loader
 
