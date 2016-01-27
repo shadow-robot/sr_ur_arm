@@ -87,6 +87,8 @@ struct ur_robot_state
   double masterboard_robot_voltage_;
   double masterboard_robot_current_;
   double actual_joint_voltages_[NUM_OF_JOINTS];
+  double digital_outputs_;
+  double program_state_;
 }__attribute__((packed));
 
 // shortened telegram of ur_robot_state
