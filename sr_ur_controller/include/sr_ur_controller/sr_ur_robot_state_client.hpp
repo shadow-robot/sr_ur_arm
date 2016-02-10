@@ -25,6 +25,7 @@
 #ifndef SR_UR_READ_ROBOT_STATE_HPP_
 #define SR_UR_READ_ROBOT_STATE_HPP_
 
+#include <string>
 #include <uv.h>
 #include "sr_ur_controller/sr_ur_driver.hpp"
 
@@ -36,6 +37,7 @@ struct UrRobotStateClient
   uv_tcp_t       tcp_stream_;
   uv_buf_t       buffer_;
   bool           robot_state_received;
+  std::string    protocol_version;
 
   void start();
   void stop();

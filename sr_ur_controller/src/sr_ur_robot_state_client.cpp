@@ -77,18 +77,53 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
 
   pthread_mutex_lock(&rs_client->ur_->robot_state_mutex_);
   char *pdata;
-  if (sizeof(ur_robot_state) == number_of_chars_received)
+
+  if (rs_client->protocol_version.empty())
   {
-    pdata = buffer.base;
+    if (sizeof(ur_robot_state_v3_0) == number_of_chars_received)
+    {
+      ROS_WARN_STREAM("UR robot state protocol v3.0 or v3.1");
+      rs_client->protocol_version = "3.0";
+      pdata = buffer.base;
+    }
+    else if (sizeof(ur_robot_state) == number_of_chars_received)
+    {
+      ROS_WARN_STREAM("UR robot state protocol v3.2");
+      rs_client->protocol_version = "3.2";
+      pdata = buffer.base;
+    }
   }
-  else if (sizeof(ur_short_robot_state) + sizeof(ur_robot_state) <= number_of_chars_received)
+  else if (rs_client->protocol_version == "3.0")
   {
-    pdata = buffer.base + sizeof(ur_robot_state);
+    if (sizeof(ur_robot_state_v3_0) == number_of_chars_received)
+    {
+      pdata = buffer.base;
+    }
+    else if (sizeof(ur_short_robot_state) + sizeof(ur_robot_state_v3_0) <= number_of_chars_received)
+    {
+      pdata = buffer.base + sizeof(ur_robot_state_v3_0);
+    }
+    else
+    {
+      pthread_mutex_unlock(&rs_client->ur_->robot_state_mutex_);
+      return;
+    }
   }
-  else
+  else if (rs_client->protocol_version == "3.2")
   {
-    pthread_mutex_unlock(&rs_client->ur_->robot_state_mutex_);
-    return;
+    if (sizeof(ur_robot_state) == number_of_chars_received)
+    {
+      pdata = buffer.base;
+    }
+    else if (sizeof(ur_short_robot_state) + sizeof(ur_robot_state) <= number_of_chars_received)
+    {
+      pdata = buffer.base + sizeof(ur_robot_state);
+    }
+    else
+    {
+      pthread_mutex_unlock(&rs_client->ur_->robot_state_mutex_);
+      return;
+    }
   }
 
   ur_robot_state *robot_state = (ur_robot_state*) pdata;

@@ -52,6 +52,46 @@ struct ur_set_teach_mode
 }__attribute__((packed));
 
 // the contents of the telegram from the ur arm controller to the control PC
+// This is valid for versions 3.0 and 3.1 of the arm controller SW
+struct ur_robot_state_v3_0
+{
+  int32_t message_size_;
+  double time_;
+  double target_positions_[NUM_OF_JOINTS];
+  double target_velocities_[NUM_OF_JOINTS];
+  double target_accelerations_[NUM_OF_JOINTS];
+  double target_currents_[NUM_OF_JOINTS];
+  double target_torques_[NUM_OF_JOINTS];
+  double actual_positions_[NUM_OF_JOINTS];
+  double actual_velocities_[NUM_OF_JOINTS];
+  double actual_currents_[NUM_OF_JOINTS];
+  double joint_control_torques_[NUM_OF_JOINTS];
+  double actual_tool_coordinates_[NUM_OF_JOINTS];
+  double actual_tool_speed_[NUM_OF_JOINTS];
+  double generalised_tool_forces_[NUM_OF_JOINTS];
+  double target_tool_coordinates_[NUM_OF_JOINTS];
+  double target_tool_speed_[NUM_OF_JOINTS];
+  int64_t digital_pins_;
+  double motor_temperatures_[NUM_OF_JOINTS];
+  double controller_timer_;
+  double test_value_;
+  int64_t robot_mode_;
+  int64_t joint_modes_[NUM_OF_JOINTS];
+  int64_t safety_mode_;
+  int64_t unused_1_[6];
+  double tool_accelerometer_values_[3];
+  int64_t unused_2_[6];
+  double speed_scaling_;
+  double linear_momentum_norm_;
+  int64_t unused_3_[2];
+  double masterboard_main_voltage_;
+  double masterboard_robot_voltage_;
+  double masterboard_robot_current_;
+  double actual_joint_voltages_[NUM_OF_JOINTS];
+}__attribute__((packed));
+
+// the contents of the telegram from the ur arm controller to the control PC
+// This is valid for version 3.2 of the arm controller SW
 struct ur_robot_state
 {
   int32_t message_size_;
