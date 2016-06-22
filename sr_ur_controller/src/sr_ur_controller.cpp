@@ -38,7 +38,7 @@ UrArmController::UrArmController() :
 {
 }
 
-bool UrArmController::init(ros_ethercat_model::RobotState* robot, ros::NodeHandle &n)
+bool UrArmController::init(ros_ethercat_model::RobotStateInterface* robot, ros::NodeHandle &n)
 {
   ROS_ASSERT(robot);
   robot_ = robot;
@@ -49,9 +49,13 @@ bool UrArmController::init(ros_ethercat_model::RobotState* robot, ros::NodeHandl
     joint_prefix_ = robot_id_ + '_';
   }
 
+
+  std::string robot_state_name;
+  node_.param<std::string>("robot_state_name", robot_state_name, "unique_robot_hw");
+
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
-    joint_states_[i] = robot_->getJointState(joint_prefix_ + ur_joints[i]);
+    joint_states_[i] = robot_->getHandle(robot_state_name).getState()->getJointState(joint_prefix_ + ur_joints[i]);
     if (!joint_states_[i])
     {
       ROS_ERROR_STREAM("UrArmController could not find joint named : " << joint_prefix_ + ur_joints[i]);

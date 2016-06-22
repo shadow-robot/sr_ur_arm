@@ -27,19 +27,19 @@
 
 #include <ros/node_handle.h>
 #include <controller_interface/controller.h>
-#include <ros_ethercat_model/robot_state.hpp>
+#include <ros_ethercat_model/robot_state_interface.hpp>
 #include <realtime_tools/realtime_publisher.h>
 #include <sr_ur_controller/sr_ur_driver.hpp>
 #include <sr_ur_msgs/SetTeachMode.h>
 
 namespace sr_ur
 {
-class UrArmController : public controller_interface::Controller<ros_ethercat_model::RobotState>
+class UrArmController : public controller_interface::Controller<ros_ethercat_model::RobotStateInterface>
 {
 public:
   UrArmController();
 
-  virtual bool init(ros_ethercat_model::RobotState* robot, ros::NodeHandle &n);
+  virtual bool init(ros_ethercat_model::RobotStateInterface* robot, ros::NodeHandle &n);
   virtual void starting(const ros::Time&);
   virtual void stopping(const ros::Time&);
   virtual void update(const ros::Time&, const ros::Duration&);
@@ -47,7 +47,7 @@ public:
 protected:
   ros::NodeHandle node_;
 
-  ros_ethercat_model::RobotState *robot_;
+  ros_ethercat_model::RobotStateInterface *robot_;
   ros_ethercat_model::JointState *joint_states_[NUM_OF_JOINTS];
 
   // used for throttling loop at 8ms with master loop at 1ms
