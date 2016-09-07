@@ -26,7 +26,7 @@
 #define SR_UR_PROGRAM_LOADER_HPP_
 
 #include <uv.h>
-#include "sr_ur_controller/sr_ur_driver.hpp"
+#include "sr_ur_robot_hw/sr_ur_driver.hpp"
 
 struct UrProgramLoader
 {

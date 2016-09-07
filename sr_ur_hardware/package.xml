@@ -1,5 +1,5 @@
 <package>
-  <name>sr_ur_harwdare</name>
+  <name>sr_ur_hardware</name>
   <version>0.0.1</version>
   <description>ur arm combined hardware interface for ros_controll</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>

@@ -5,7 +5,7 @@ project(sr_ur_hardware)
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     pluginlib
-    combined_robot_hardware
+    combined_robot_hw
     controller_interface
     ros_ethercat_model
     sr_ur_msgs
@@ -30,7 +30,7 @@ catkin_package(
 	CATKIN_DEPENDS
 	    roscpp
 	    pluginlib
-	    combined_robot_hardware
+	    combined_robot_hw
 	    controller_interface
 	    ros_ethercat_model
 	    sr_ur_msgs

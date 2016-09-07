@@ -28,11 +28,11 @@
 #include <string.h>
 #include <ros/ros.h>
 
-#include <sr_ur_controller/sr_ur_driver.hpp>
-#include "sr_ur_controller/sr_ur_hardware_messages.hpp"
-#include "sr_ur_controller/sr_ur_event_loop.hpp"
-#include "sr_ur_controller/sr_ur_control_server.hpp"
-#include "sr_ur_controller/sr_ur_robot_state_client.hpp"
+#include <sr_ur_robot_hw/sr_ur_driver.hpp>
+#include "sr_ur_robot_hw/sr_ur_hardware_messages.hpp"
+#include "sr_ur_robot_hw/sr_ur_event_loop.hpp"
+#include "sr_ur_robot_hw/sr_ur_control_server.hpp"
+#include "sr_ur_robot_hw/sr_ur_robot_state_client.hpp"
 
 const int ROBOT_STATE_PORT = 30003;
 

@@ -29,11 +29,11 @@
 #include <ros/ros.h>
 #include <netinet/in.h>
 
-#include "sr_ur_controller/sr_ur_driver.hpp"
-#include "sr_ur_controller/sr_ur_event_loop.hpp"
-#include "sr_ur_controller/sr_ur_hardware_messages.hpp"
-#include "sr_ur_controller/sr_ur_program_loader.hpp"
-#include "sr_ur_controller/sr_ur_control_server.hpp"
+#include "sr_ur_robot_hw/sr_ur_driver.hpp"
+#include "sr_ur_robot_hw/sr_ur_event_loop.hpp"
+#include "sr_ur_robot_hw/sr_ur_hardware_messages.hpp"
+#include "sr_ur_robot_hw/sr_ur_program_loader.hpp"
+#include "sr_ur_robot_hw/sr_ur_control_server.hpp"
 
 const int32_t MSG_QUIT           = 1;
 const int32_t MSG_STOPJ          = 3;
