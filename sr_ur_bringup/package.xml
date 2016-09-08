@@ -14,5 +14,5 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <run_depend>ros_ethercat_loop</run_depend>
-  <run_depend>sr_ur_controller</run_depend>
+  <run_depend>sr_ur_robot_hw</run_depend>
 </package>
