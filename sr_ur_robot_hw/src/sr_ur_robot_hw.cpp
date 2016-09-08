@@ -16,7 +16,7 @@
  */
 
 /*
- * sr_ur_hardware.cpp
+ * sr_ur_robot_hw.cpp
  *
  *  Created on: 20 Oct 2014
  *      Author: Manos Nikolaidis, Dan Greenwald
@@ -25,19 +25,19 @@
 #include <pthread.h>
 #include <pluginlib/class_list_macros.h>
 #include <std_msgs/Float64MultiArray.h>
-#include "sr_ur_robot_hw/sr_ur_hardware.hpp"
+#include "sr_ur_robot_hw/sr_ur_robot_hw.hpp"
 
 
 using namespace std;
 
 namespace sr_ur
 {
-UrArmHardware::UrArmHardware() :
+UrArmRobotHW::UrArmRobotHW() :
     loop_count_(0), ur_(), teach_mode_(false)
 {
 }
 
-bool UrArmHardware::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
+bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
 {
   node_  = n;
 
@@ -68,21 +68,21 @@ bool UrArmHardware::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   string robot_ip_address;
   if (!node_.getParam("robot_ip_address", robot_ip_address))
   {
-    ROS_ERROR("No IP address specified for sending commands to UrArmHardware");
+    ROS_ERROR("No IP address specified for sending commands to UrArmRobotHW");
     return false;
   }
 
   string control_pc_ip_address;
   if (!node_.getParam("control_pc_ip_address", control_pc_ip_address))
   {
-    ROS_ERROR("No IP address specified for receiving state from UrArmHardware");
+    ROS_ERROR("No IP address specified for receiving state from UrArmRobotHW");
     return false;
   }
 
   string robot_program_path_param;
   if (!node_.getParam("robot_program_path", robot_program_path_param))
   {
-    ROS_ERROR("No robot program path specified for UrArmHardware");
+    ROS_ERROR("No robot program path specified for UrArmRobotHW");
     return false;
   }
 
@@ -91,12 +91,12 @@ bool UrArmHardware::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   ur_.host_address_       = strdup(control_pc_ip_address.c_str());
   ur_.robot_program_path_ = strdup(robot_program_path_param.c_str());
 
-  set_teach_mode_server_ = node_.advertiseService("set_teach_mode", &UrArmHardware::setTeachMode, this);
+  set_teach_mode_server_ = node_.advertiseService("set_teach_mode", &UrArmRobotHW::setTeachMode, this);
   return true;
 }
 
 
-void UrArmHardware::read(const ros::Time& time, const ros::Duration& period)
+void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
 {
   if (++loop_count_ >= UR_PERIOD)
   {
@@ -119,7 +119,7 @@ void UrArmHardware::read(const ros::Time& time, const ros::Duration& period)
  }
 }
 
-void UrArmHardware::write(const ros::Time& time, const ros::Duration& period)
+void UrArmRobotHW::write(const ros::Time& time, const ros::Duration& period)
 {
   if (loop_count_ >= UR_PERIOD && ur_.robot_ready_to_move_)
   {
@@ -134,7 +134,7 @@ void UrArmHardware::write(const ros::Time& time, const ros::Duration& period)
   }
 }
 
-bool UrArmHardware::setTeachMode(sr_ur_msgs::SetTeachMode::Request &req, sr_ur_msgs::SetTeachMode::Response &resp)
+bool UrArmRobotHW::setTeachMode(sr_ur_msgs::SetTeachMode::Request &req, sr_ur_msgs::SetTeachMode::Response &resp)
 {
   teach_mode_ = req.teach_mode;
   ur_.send_teach_mode_command(teach_mode_);
@@ -144,4 +144,4 @@ bool UrArmHardware::setTeachMode(sr_ur_msgs::SetTeachMode::Request &req, sr_ur_m
 
 }
 
-PLUGINLIB_EXPORT_CLASS( sr_ur::UrArmHardware, hardware_interface::RobotHW)
+PLUGINLIB_EXPORT_CLASS( sr_ur::UrArmRobotHW, hardware_interface::RobotHW)

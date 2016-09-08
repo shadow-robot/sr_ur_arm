@@ -1,6 +1,6 @@
 # http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
 cmake_minimum_required(VERSION 2.8.3)
-project(sr_ur_hardware)
+project(sr_ur_robot_hw)
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
@@ -13,18 +13,18 @@ find_package(catkin REQUIRED COMPONENTS
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_library(sr_ur_hardware
+add_library(sr_ur_robot_hw
 	src/sr_ur_driver.cpp
 	src/sr_ur_event_loop.cpp
 	src/sr_ur_program_loader.cpp
 	src/sr_ur_control_server.cpp
-	src/sr_ur_hardware.cpp
+	src/sr_ur_robot_hw.cpp
 	src/sr_ur_robot_state_client.cpp
 )
-add_dependencies(sr_ur_hardware
+add_dependencies(sr_ur_robot_hw
 	${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(sr_ur_hardware uv ${catkin_LIBRARIES})
+target_link_libraries(sr_ur_robot_hw uv ${catkin_LIBRARIES})
 
 catkin_package(
 	CATKIN_DEPENDS
@@ -37,7 +37,7 @@ catkin_package(
 	INCLUDE_DIRS
 	    include
 	LIBRARIES
-            sr_ur_hardware
+            sr_ur_robot_hw
 )
 
 install(TARGETS ${PROJECT_NAME}

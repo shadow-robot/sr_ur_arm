@@ -1,5 +1,5 @@
 <package>
-  <name>sr_ur_hardware</name>
+  <name>sr_ur_robot_hw</name>
   <version>0.0.1</version>
   <description>ur arm combined hardware interface for ros_controll</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
@@ -32,7 +32,7 @@
   <build_depend>libuv-dev</build_depend>
 
   <export>
-    <controller_interface plugin="${prefix}/hardware_plugin.xml"/>
+    <controller_interface plugin="${prefix}/robot_hw_plugin.xml"/>
   </export>
 
 </package>

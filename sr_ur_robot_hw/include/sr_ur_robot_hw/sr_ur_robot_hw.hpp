@@ -16,14 +16,14 @@
  */
 
 /*
- * sr_ur_hardware.hpp
+ * sr_ur_robot_hw.hpp
  *
  *  Created on: 20 Oct 2014
  *      Author: Manos Nikolaidis, Dan Greenwald
  */
 
-#ifndef SR_UR_HARDWARE_HPP_
-#define SR_UR_HARDWARE_HPP_
+#ifndef SR_UR_ROBOT_HW_HPP_
+#define SR_UR_ROBOT_HW_HPP_
 
 #include <ros/node_handle.h>
 #include <hardware_interface/robot_hw.h>
@@ -35,11 +35,11 @@
 
 namespace sr_ur
 {
-class UrArmHardware : public hardware_interface::RobotHW
+class UrArmRobotHW : public hardware_interface::RobotHW
 {
 public:
-  UrArmHardware();
-  virtual ~UrArmHardware();
+  UrArmRobotHW();
+  virtual ~UrArmRobotHW();
 
   virtual bool init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh);
   virtual void read(const ros::Time& time, const ros::Duration& period);
