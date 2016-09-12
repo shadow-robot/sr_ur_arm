@@ -1,0 +1,13 @@
+<launch>
+  <!-- This launch file is for a combination of ur arms and shadow hands -->
+
+  <arg name="arm_id" default="ra"/>
+  <arg name="side" default="right"/>
+  <arg name="robot_model" default="ur10"/>
+  <arg name="use_moveit" default="true"/>
+
+  <arg name="robot_description" default="$(find sr_ur_launch)/urdf/ur10_robot.urdf.xacro"/>
+
+  <node name="arm_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--shutdown-timeout=1.0 $(arg arm_id)_sr_ur_controller"/>
+
+</launch>
