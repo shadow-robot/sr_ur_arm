@@ -1,3 +1,6 @@
+robot_hardware:
+  - ra_sr_ur_robot_hw
+
 ra_sr_ur_robot_hw:
   type: sr_ur_robot_hw/UrArmRobotHW
 
