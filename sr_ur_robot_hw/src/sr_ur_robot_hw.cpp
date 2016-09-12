@@ -27,10 +27,11 @@
 #include <std_msgs/Float64MultiArray.h>
 #include "sr_ur_robot_hw/sr_ur_robot_hw.hpp"
 
+PLUGINLIB_EXPORT_CLASS( sr_ur_robot_hw::UrArmRobotHW, hardware_interface::RobotHW)
 
 using namespace std;
 
-namespace sr_ur
+namespace sr_ur_robot_hw
 {
 UrArmRobotHW::UrArmRobotHW() :
     loop_count_(0), ur_(), teach_mode_(false)
@@ -143,5 +144,3 @@ bool UrArmRobotHW::setTeachMode(sr_ur_msgs::SetTeachMode::Request &req, sr_ur_ms
 }
 
 }
-
-PLUGINLIB_EXPORT_CLASS( sr_ur::UrArmRobotHW, hardware_interface::RobotHW)

@@ -1,5 +1,5 @@
 <library path="lib/libsr_ur_robot_hw">
   <class name="sr_ur_robot_hw/UrArmRobotHW"
-         type="sr_ur::UrArmRobotHW"
+         type="sr_ur_robot_hw::UrArmRobotHW"
          base_class_type="hardware_interface::RobotHW" />
 </library>

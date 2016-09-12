@@ -33,13 +33,13 @@
 #include <sr_ur_msgs/SetTeachMode.h>
 
 
-namespace sr_ur
+namespace sr_ur_robot_hw
 {
 class UrArmRobotHW : public hardware_interface::RobotHW
 {
 public:
   UrArmRobotHW();
-  virtual ~UrArmRobotHW();
+  virtual ~UrArmRobotHW(){};
 
   virtual bool init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh);
   virtual void read(const ros::Time& time, const ros::Duration& period);
@@ -68,13 +68,10 @@ protected:
 
   UrRobotDriver ur_;
 
-  void enforceLimits(double *targets);
-  virtual void setCommandCB(const std_msgs::Float64MultiArrayConstPtr& msg);
   bool setTeachMode(sr_ur_msgs::SetTeachMode::Request &req, sr_ur_msgs::SetTeachMode::Response &resp);
 
   bool teach_mode_;
   ros::ServiceServer set_teach_mode_server_;
-  ros::Subscriber sub_command_;
 
 private:
 

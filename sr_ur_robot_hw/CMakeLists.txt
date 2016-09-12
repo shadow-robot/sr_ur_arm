@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     pluginlib
     combined_robot_hw
+    hardware_interface
     controller_interface
     ros_ethercat_model
     sr_ur_msgs
@@ -32,6 +33,7 @@ catkin_package(
 	    pluginlib
 	    combined_robot_hw
 	    controller_interface
+	    hardware_interface
 	    ros_ethercat_model
 	    sr_ur_msgs
 	INCLUDE_DIRS
@@ -48,7 +50,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
-install(FILES controller_plugins.xml
+install(FILES robot_hw_plugins.xml
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
