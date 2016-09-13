@@ -40,7 +40,7 @@ UrArmRobotHW::UrArmRobotHW() :
 
 bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
 {
-  node_  = n;
+  node_  = robot_hw_nh;
 
   if (node_.getParam("robot_id", robot_id_) && (!robot_id_.empty()))
   {
@@ -60,11 +60,16 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
     std::string joint_name = joint_prefix_ + ur_joints[i];
+    ROS_WARN_STREAM("Registering " << joint_name);
     joint_position_[i] = joint_effort_[i] = joint_velocity_[i] = 0.0;
     joint_state_interface_.registerHandle(
       JointStateHandle(joint_name, &joint_position_[i], &joint_velocity_[i], &joint_effort_[i]));
-    registerInterface(&joint_state_interface_);
+    position_joint_interface_.registerHandle(
+      JointHandle(joint_state_interface_.getHandle(joint_name), &joint_position_command_[i]));
   }
+  registerInterface(&joint_state_interface_);
+  registerInterface(&position_joint_interface_);
+
 
   string robot_ip_address;
   if (!node_.getParam("robot_ip_address", robot_ip_address))
@@ -93,6 +98,8 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   ur_.robot_program_path_ = strdup(robot_program_path_param.c_str());
 
   set_teach_mode_server_ = node_.advertiseService("set_teach_mode", &UrArmRobotHW::setTeachMode, this);
+  ur_.start();
+
   return true;
 }
 
@@ -101,6 +108,7 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
 {
   if (++loop_count_ >= UR_PERIOD)
   {
+
     pthread_mutex_lock(&ur_.robot_state_mutex_);
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
     {
