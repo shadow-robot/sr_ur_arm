@@ -60,7 +60,7 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
   {
     std::string joint_name = joint_prefix_ + ur_joints[i];
-    ROS_WARN_STREAM("Registering " << joint_name);
+    ROS_INFO_STREAM("Joint state interface for arm joint " << joint_name);
     joint_position_[i] = joint_effort_[i] = joint_velocity_[i] = 0.0;
     joint_state_interface_.registerHandle(
       JointStateHandle(joint_name, &joint_position_[i], &joint_velocity_[i], &joint_effort_[i]));
