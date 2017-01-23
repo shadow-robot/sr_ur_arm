@@ -8,12 +8,12 @@
   <param name="robot_description" command="$(find xacro)/xacro.py '$(find sr_ur_description)/urdf/biarm.urdf.xacro'"/>
 
   <!-- low level controllers for right and left arm and a higher level trajectory controller -->
-  <rosparam command="load" file="$(find sr_ur_controller)/config/left_ur_arm_controller.yaml"/>
-  <rosparam command="load" file="$(find sr_ur_controller)/config/right_ur_arm_controller.yaml"/>
+  <rosparam command="load" file="$(find sr_ur_robot_hw)/config/left_ur_arm_controller.yaml"/>
+  <rosparam command="load" file="$(find sr_ur_robot_hw)/config/right_ur_arm_controller.yaml"/>
   <rosparam command="load" file="$(find sr_robot_launch)/config/la_trajectory_controller.yaml"/>
   <rosparam command="load" file="$(find sr_robot_launch)/config/ra_trajectory_controller.yaml"/>
 
-  <node name="arm_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="ra_sr_ur_controller la_sr_ur_controller"/>
+  <node name="arm_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="ra_sr_ur_robot_hw la_sr_ur_robot_hw"/>
   <node name="traj_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--stopped ra_trajectory_controller la_trajectory_controller"/>
   
   <!-- real time control loop -->
@@ -26,8 +26,8 @@
       launch-prefix="ros_grant"/>
   </group>
 
-  <param name="ra_sr_ur_controller/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>
-  <param name="la_sr_ur_controller/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>
+  <param name="ra_sr_ur_robot_hw/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>
+  <param name="la_sr_ur_robot_hw/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>
 
   <include file="$(find ros_ethercat_model)/launch/joint_state_publisher.launch"/>
 </launch>
