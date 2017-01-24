@@ -1,0 +1,4 @@
+- git:
+    uri: 'https://github.com/shadow-robot/ros_ethercat'
+    version: 'kinetic-devel'
+    local-name: ros_ethercat
