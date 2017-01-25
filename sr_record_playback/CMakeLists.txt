@@ -14,7 +14,6 @@ catkin_package(
 		actionlib
 		trajectory_msgs
 		control_msgs
-		mongodb_store
 )
 
 install(PROGRAMS

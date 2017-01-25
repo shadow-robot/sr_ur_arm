@@ -32,6 +32,7 @@ catkin_package(
 	    controller_interface
 	    ros_ethercat_model
 	    sr_ur_msgs
+	    libuv-dev
 	INCLUDE_DIRS
 	    include
 	LIBRARIES
