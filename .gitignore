@@ -1,0 +1,7 @@
+.#*
+#*
+*~
+*.pyc
+
+# PyCharm project
+.idea
