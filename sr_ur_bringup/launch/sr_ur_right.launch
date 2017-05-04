@@ -1,19 +1,17 @@
 <launch>
   <!-- This launch file is for using the right UR arm by itself -->
-  
+
   <!-- Set to true for debugging -->
   <arg name="debug" default="false"/>
-  
+
   <!-- Loads the robot description -->
   <param name="robot_description" command="$(find xacro)/xacro.py '$(find sr_ur_description)/urdf/biarm.urdf.xacro'"/>
-  
-  <!-- right arm controller -->
-  <rosparam command="load" file="$(find sr_ur_controller)/config/right_ur_arm_controller.yaml"/>
-  <rosparam command="load" file="$(find sr_robot_launch)/config/ra_trajectory_controller.yaml"/> 
 
-  <node name="arm_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="ra_sr_ur_controller"/>
-  <node name="traj_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--stopped ra_trajectory_controller"/>
-  
+  <!-- right arm controller -->
+  <rosparam command="load" file="$(find sr_ur_robot_hw)/config/ra_sr_ur_robot_hw.yaml"/>
+  <rosparam command="load" file="$(find sr_robot_launch)/config/ra_trajectory_controller.yaml"/>
+  <param name="ra_sr_ur_robot_hw/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>
+
   <!-- real time control loop -->
   <group if="$(arg debug)">
     <node name="realtime_loop" pkg="ros_ethercat_loop" type="ros_ethercat_loop" args="-i _ -r robot_description" output="screen"
@@ -23,8 +21,8 @@
     <node name="realtime_loop" pkg="ros_ethercat_loop" type="ros_ethercat_loop" args="-i _ -r robot_description" output="screen"
       launch-prefix="ros_grant"/>
   </group>
-  
-  <param name="ra_sr_ur_controller/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>
-  
+
+  <node name="traj_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--stopped ra_trajectory_controller"/>
+
   <include file="$(find ros_ethercat_model)/launch/joint_state_publisher.launch"/>
 </launch>

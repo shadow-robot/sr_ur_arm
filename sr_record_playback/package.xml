@@ -25,5 +25,5 @@
   <run_depend>control_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>trajectory_msgs</run_depend>
-  <run_depend>sr_ur_controller</run_depend>
+  <run_depend>sr_ur_robot_hw</run_depend>
 </package>

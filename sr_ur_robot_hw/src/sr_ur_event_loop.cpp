@@ -23,7 +23,7 @@
 
 #define ROS_ASSERT_ENABLED
 #include <ros/assert.h>
-#include "sr_ur_controller/sr_ur_event_loop.hpp"
+#include "sr_ur_robot_hw/sr_ur_event_loop.hpp"
 
 // function for the thread that runs the event loop
 static void *asynchronous_io_loop(void *data)

@@ -1,7 +1,7 @@
 <package>
-  <name>sr_ur_controller</name>
+  <name>sr_ur_robot_hw</name>
   <version>0.0.1</version>
-  <description>ur arm controller for ros_ethercat</description>
+  <description>ur arm combined hardware interface for ros_controll</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
   <license>BSD</license>
@@ -10,20 +10,24 @@
   <url type="repository">https://github.com/shadow-robot/sr_ur_arm</url>
   <url type="bugtracker">https://github.com/shadow-robot/sr_ur_arm/issues</url>
 
-  <author email="software@shadowrobot.com">Manos Nikolaidis</author>
+  <author email="software@shadowrobot.com">Manos Nikolaidis + Dan Greenwald</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
+  <build_depend>combined_robot_hw</build_depend>
   <build_depend>pluginlib</build_depend>
   <build_depend>controller_interface</build_depend>
+  <build_depend>hardware_interface</build_depend>
   <build_depend>ros_ethercat_model</build_depend>
   <build_depend>sr_ur_msgs</build_depend>
   <build_depend>libuv-dev</build_depend>
 
   <run_depend>roscpp</run_depend>
+  <run_depend>combined_robot_hw</run_depend>
   <run_depend>pluginlib</run_depend>
   <run_depend>controller_interface</run_depend>
+  <run_depend>hardware_interface</run_depend>
   <run_depend>ros_ethercat_model</run_depend>
   <run_depend>joint_state_controller</run_depend>
   <run_depend>ur_description</run_depend>
@@ -31,7 +35,7 @@
   <run_depend>libuv-dev</run_depend>
 
   <export>
-    <controller_interface plugin="${prefix}/controller_plugins.xml"/>
+    <hardware_interface plugin="${prefix}/robot_hw_plugin.xml"/>
   </export>
 
 </package>

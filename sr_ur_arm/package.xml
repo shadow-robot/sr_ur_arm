@@ -17,7 +17,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
-  <run_depend>sr_ur_controller</run_depend>
+  <run_depend>sr_ur_robot_hw</run_depend>
   <run_depend>sr_ur_bringup</run_depend>
   <run_depend>sr_trajectory_record_playback</run_depend>
   <run_depend>sr_ur_description</run_depend>
