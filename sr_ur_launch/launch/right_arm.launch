@@ -5,7 +5,7 @@
   <arg name="use_moveit" default="true"/>
   <arg name="debug" default="false"/>
 
-  <arg name="robot_description" default="$(find sr_ur_launch)/description/ur10_robot.urdf.xacro"/>
+  <arg name="robot_description" default="$(find sr_ur_launch)/description/ur10_right_robot.urdf.xacro"/>
   <param name="robot_description" command="$(find xacro)/xacro.py '$(arg robot_description)'"/>
 
   <rosparam command="load" file="$(find sr_ur_robot_hw)/config/ra_sr_ur_robot_hw.yaml"/>
