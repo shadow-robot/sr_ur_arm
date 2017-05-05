@@ -15,9 +15,9 @@ This will launch the five finger hand (shadowhand_motor) by default . If you wan
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 
-|   | Right                                          | Left                                    | 
-|---| ---------------------------------------------- |-----------------------------------------| 
-|1  | shadowhand_motor.urdf.xacro                    | shadowhand_left_motor.urdf.xacro        | 
+|   | Right                                          | Left                                    |
+|---| ---------------------------------------------- |-----------------------------------------|
+|1  | shadowhand_motor.urdf.xacro                    | shadowhand_left_motor.urdf.xacro        |
 |2  | shadowhand_motor_biotac.urdf.xacro             | shadowhand_left_motor_biotac.urdf.xacro |
 |3  | shadowhand_motor_ff_biotac.urdf.xacro          |                                         |
 |4  | shadowhand_motor_btsp.urdf.xacro               |                                         |
@@ -37,7 +37,7 @@ roslaunch sr_robot_launch srhand.launch robot_description:=`rospack find sr_desc
 ```
 
 * The `robot description` param can be changed to start any of the available Shadow hands shown in the table.
-* If it is a left hand, `hand_id:=lh` should be added. For example: 
+* If it is a left hand, `hand_id:=lh` should be added. For example:
 ```bash
 roslaunch sr_robot_launch srhand.launch robot_description:=`rospack find sr_description`/robots/shadowhand_left_motor.urdf.xacro hand_id:=lh
 ```
@@ -80,6 +80,18 @@ or, for the left hand and arm
 roslaunch sr_robot_launch sr_left_ur10arm_hand.launch sim:=false hand_serial:=1178
 ```
 
+For just an arm, use
+
+```bash
+roslaunch sr_ur_launch right_arm.launch
+```
+
+or
+
+```bash
+roslaunch sr_ur_launch left_arm.launch
+```
+
 To find the hand serial you can launch the command without the `hand_serial` argument and then check the program output. You should see something like:
 
 ```
@@ -118,7 +130,7 @@ If your hand has biotacs sensors, simply append `_biotacs` to the `robot_descrip
 
 ```bash
 robot_description:=`rospack find sr_multi_description`/urdf/right_srhand_ur10_joint_limited_biotacs.urdf.xacro robot_config_file:=`rospack find sr_multi_moveit_config`/config/robot_configs/right_sh_ur10_biotac.yaml
-``` 
+```
 
 ## Bimanual system
 ![](https://raw.githubusercontent.com/shadow-robot/sr_interface/indigo-devel/images/bimanual.png)

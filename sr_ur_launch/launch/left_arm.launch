@@ -1,0 +1,26 @@
+<launch>
+  <!-- This launch file is for a combination of ur arms and shadow hands -->
+
+  <arg name="robot_model" default="ur10"/>
+  <arg name="use_moveit" default="true"/>
+  <arg name="debug" default="false"/>
+
+  <arg name="robot_description" default="$(find sr_ur_launch)/description/ur10_left_robot.urdf.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(arg robot_description)'"/>
+
+  <rosparam command="load" file="$(find sr_ur_robot_hw)/config/la_sr_ur_robot_hw.yaml"/>
+  <rosparam command="load" file="$(find sr_ur_launch)/config/la_trajectory_controller.yaml"/>
+
+  <param name="ra_sr_ur_robot_hw/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>
+
+  <node if="$(arg debug)" name="ur_arm_robot" pkg="ros_control_robot" type="ros_control_robot" args="" output="screen" launch-prefix="gdb -ex run -args"/>
+  <node unless="$(arg debug)" name="ur_arm_robot" pkg="ros_control_robot" type="ros_control_robot" args="" output="screen" launch-prefix="ethercat_grant"/>
+
+  <node name="joint_state_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--shutdown-timeout=1.0 joint_state_controller" />
+  <node name="arm_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--shutdown-timeout=1.0 la_trajectory_controller"/>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="tf_prefix" type="string" value="" />
+  </node>
+</launch>
