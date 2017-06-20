@@ -6,7 +6,7 @@
 - git:
     local-name: universal_robot
     uri: https://github.com/shadow-robot/universal_robot
-    version: F_elbow_limit
+    version: F_elbow_limits
 
 - git:
     local-name: shadow_robot_ethercat
