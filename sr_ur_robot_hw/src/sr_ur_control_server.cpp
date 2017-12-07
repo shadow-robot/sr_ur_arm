@@ -39,9 +39,11 @@ const int32_t MSG_QUIT           = 1;
 const int32_t MSG_STOPJ          = 3;
 const int32_t MSG_SERVOJ         = 5;
 const int32_t MSG_SET_TEACH_MODE = 7;
+const int32_t MSG_SET_PAYLOAD    = 8;
 
 const double  MULT_JOINTSTATE    = 10000.0;
 const size_t  RESPONSE_SIZE      = 512;
+const int     FLOAT_CHARS        = 10;
 
 // reuse the preallocated buffer for storing the robot's response
 // when a command is send from the server in the host to the client in the robot
@@ -215,6 +217,7 @@ void UrControlServer::start()
   command_stream_.data  = (void*)this;
   write_request_.data   = (void*)this;
   teach_command_write_request_.data = (void*)this;
+  payload_command_write_request_.data = (void*)this;
   write_request_pool_.init((void*)this);
 
   command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
@@ -225,6 +228,8 @@ void UrControlServer::start()
   // the reason is that the ur_robot_program expects messages of a unique size (7 bytes)
   teach_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
   teach_command_buffer_.len   = sizeof(ur_servoj);
+  payload_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  payload_command_buffer_.len   = sizeof(ur_servoj);
 
   status = uv_listen((uv_stream_t*)&server_stream_, 1, received_connection_cb);
   ROS_ASSERT(0 == status);
@@ -258,6 +263,7 @@ void UrControlServer::stop()
   free(command_buffer_.base);
   free(response_buffer_.base);
   free(teach_command_buffer_.base);
+  free(payload_command_buffer_.base);
 }
 
 void UrControlServer::send_servo_command()
@@ -296,6 +302,36 @@ void UrControlServer::send_teach_mode_command(int32_t teach_mode)
   int status = uv_write(&teach_command_write_request_,
                         (uv_stream_t*)&command_stream_,
                         &teach_command_buffer_,
+                        1,
+                        command_sent_cb);
+  ROS_ASSERT(0 == status);
+
+}
+
+void UrControlServer::send_payload_command(float mass_kg, float center_of_inertia_m[3])
+{
+  ROS_ASSERT(ur_);
+
+  ROS_WARN("Set %s robot payload = %f (%f, %f, %f)", ur_->robot_side_,
+           mass_kg,
+           center_of_inertia_m[0],
+           center_of_inertia_m[1],
+           center_of_inertia_m[2]);
+  int32_t mass_g = (int32_t)(mass_kg*1000.0);
+  int32_t center_of_inertia_mm[3];
+  for (int i = 0; i < 3; i++)
+  {
+    center_of_inertia_mm[i] = (int32_t)(center_of_inertia_m[i]*1000.0);
+  }
+
+  ur_set_payload *telegram = (ur_set_payload*)payload_command_buffer_.base;
+  memset(telegram, 0, payload_command_buffer_.len);
+  telegram->message_type_ = htonl(MSG_SET_PAYLOAD);
+  telegram->payload_mass_g_ = mass_g;
+  std::copy(center_of_inertia_mm,center_of_inertia_mm+3,telegram->payload_coords_mm_);
+  int status = uv_write(&payload_command_write_request_,
+                        (uv_stream_t*)&command_stream_,
+                        &payload_command_buffer_,
                         1,
                         command_sent_cb);
   ROS_ASSERT(0 == status);

@@ -99,6 +99,9 @@ struct UrRobotDriver
 
   // send the command to set teach mode on/off to the robot
   void send_teach_mode_command(bool teach_mode);
+
+  // send the command to set the payload
+  void send_payload_command(float mass_kg, float center_of_inertia_m[3]);
 };
 
 #endif

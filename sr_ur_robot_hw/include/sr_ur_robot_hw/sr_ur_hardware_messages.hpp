@@ -51,6 +51,14 @@ struct ur_set_teach_mode
   int32_t teach_mode_;
 }__attribute__((packed));
 
+// message to set or reset the teach mode.
+struct ur_set_payload
+{
+  int32_t message_type_;
+  int32_t payload_mass_g_;
+  int32_t payload_coords_mm_[3];
+}__attribute__((packed));
+
 // the contents of the telegram from the ur arm controller to the control PC
 // This is valid for versions 3.0 and 3.1 of the arm controller SW
 struct ur_robot_state_v3_0

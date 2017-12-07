@@ -151,4 +151,11 @@ bool UrArmRobotHW::setTeachMode(sr_ur_msgs::SetTeachMode::Request &req, sr_ur_ms
   return true;
 }
 
+bool UrArmRobotHW::setPayload(sr_ur_msgs::SetPayload::Request &req, sr_ur_msgs::SetPayload::Response &resp)
+{
+  ur_.send_payload_command((float)req.mass_kg, (float[])req.centre_of_mass_m);
+  resp.success = true;
+  return true;
+}
+
 }

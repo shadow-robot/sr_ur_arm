@@ -78,3 +78,8 @@ void UrRobotDriver::send_teach_mode_command(bool teach_mode)
 {
   ctrl_server_->send_teach_mode_command((int32_t)teach_mode);
 }
+
+void UrRobotDriver::send_payload_command(float mass_kg, float center_of_inertia_m[3])
+{
+  ctrl_server_->send_payload_command(mass_kg, center_of_inertia_m);
+}

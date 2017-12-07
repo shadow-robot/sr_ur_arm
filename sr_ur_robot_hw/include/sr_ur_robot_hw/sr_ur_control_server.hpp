@@ -52,10 +52,12 @@ struct UrControlServer
   uv_buf_t   command_buffer_;
   uv_buf_t   response_buffer_;
   uv_buf_t   teach_command_buffer_;
+  uv_buf_t   payload_command_buffer_;
 
   UvWritePool write_request_pool_;
   uv_write_t write_request_;
   uv_write_t teach_command_write_request_;
+  uv_write_t payload_command_write_request_;
 
   uv_async_t async_;
 
@@ -70,6 +72,9 @@ struct UrControlServer
 
   // sends a teach_mode on-off command to the robot
   void send_teach_mode_command(int32_t teach_mode);
+
+  // send the command to set the payload
+  void send_payload_command(float mass_kg, float center_of_inertia_m[3]);
 };
 
 #endif
