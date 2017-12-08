@@ -308,27 +308,22 @@ void UrControlServer::send_teach_mode_command(int32_t teach_mode)
 
 }
 
-void UrControlServer::send_payload_command(float mass_kg, float center_of_inertia_m[3])
+void UrControlServer::send_payload_command()
 {
   ROS_ASSERT(ur_);
 
-  ROS_WARN("Set %s robot payload = %f (%f, %f, %f)", ur_->robot_side_,
-           mass_kg,
-           center_of_inertia_m[0],
-           center_of_inertia_m[1],
-           center_of_inertia_m[2]);
-  int32_t mass_g = (int32_t)(mass_kg*1000.0);
-  int32_t center_of_inertia_mm[3];
-  for (int i = 0; i < 3; i++)
-  {
-    center_of_inertia_mm[i] = (int32_t)(center_of_inertia_m[i]*1000.0);
-  }
+  ROS_WARN("Set %s robot payload = %dg (%d, %d, %d)mm", ur_->robot_side_,
+           ur_->payload_mass_g_,
+           ur_->payload_center_of_mass_mm_[0],
+           ur_->payload_center_of_mass_mm_[1],
+           ur_->payload_center_of_mass_mm_[2]);
 
   ur_set_payload *telegram = (ur_set_payload*)payload_command_buffer_.base;
   memset(telegram, 0, payload_command_buffer_.len);
   telegram->message_type_ = htonl(MSG_SET_PAYLOAD);
-  telegram->payload_mass_g_ = mass_g;
-  std::copy(center_of_inertia_mm,center_of_inertia_mm+3,telegram->payload_coords_mm_);
+  telegram->payload_mass_g_ = ur_->payload_mass_g_;
+  std::copy(&(ur_->payload_center_of_mass_mm_),&(ur_->payload_center_of_mass_mm_)+3,&(telegram->payload_coords_mm_));
+  // telegram->payload_coords_mm_ = ur_->payload_center_of_mass_mm_;
   int status = uv_write(&payload_command_write_request_,
                         (uv_stream_t*)&command_stream_,
                         &payload_command_buffer_,

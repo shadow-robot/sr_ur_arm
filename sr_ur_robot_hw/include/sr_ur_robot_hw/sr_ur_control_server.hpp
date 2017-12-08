@@ -74,7 +74,7 @@ struct UrControlServer
   void send_teach_mode_command(int32_t teach_mode);
 
   // send the command to set the payload
-  void send_payload_command(float mass_kg, float center_of_inertia_m[3]);
+  void send_payload_command();
 };
 
 #endif

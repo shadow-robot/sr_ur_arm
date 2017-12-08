@@ -24,6 +24,7 @@
 #ifndef SR_UR_DRIVER_HPP_
 #define SR_UR_DRIVER_HPP_
 
+#include <vector>
 #include <stdint.h>
 #include <pthread.h>
 
@@ -73,6 +74,12 @@ struct UrRobotDriver
   // left or right
   char *robot_side_;
 
+  // payload mass in kilograms
+  int32_t payload_mass_g_;
+
+  // payload centre of mass in metres
+  int32_t payload_center_of_mass_mm_[3];
+
   UrEventLoop        *el_;
   UrControlServer    *ctrl_server_;
   UrRobotStateClient *rs_client_;
@@ -101,7 +108,10 @@ struct UrRobotDriver
   void send_teach_mode_command(bool teach_mode);
 
   // send the command to set the payload
-  void send_payload_command(float mass_kg, float center_of_inertia_m[3]);
+  void send_payload_command();
+
+  // set the payload (but don't send it)
+  void set_payload(float mass_kg, std::vector<float> center_of_mass_m);
 };
 
 #endif
