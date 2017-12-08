@@ -98,6 +98,7 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   ur_.robot_program_path_ = strdup(robot_program_path_param.c_str());
 
   set_teach_mode_server_ = node_.advertiseService("set_teach_mode", &UrArmRobotHW::setTeachMode, this);
+  set_payload_server_ = node_.advertiseService("set_payload", &UrArmRobotHW::setPayload, this);
   ur_.start();
 
   return true;

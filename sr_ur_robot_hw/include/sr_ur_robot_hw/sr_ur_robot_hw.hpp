@@ -75,6 +75,7 @@ protected:
 
   bool teach_mode_;
   ros::ServiceServer set_teach_mode_server_;
+  ros::ServiceServer set_payload_server_;
 
 private:
 
