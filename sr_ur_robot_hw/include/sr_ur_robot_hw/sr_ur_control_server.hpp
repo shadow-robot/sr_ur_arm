@@ -53,11 +53,13 @@ struct UrControlServer
   uv_buf_t   response_buffer_;
   uv_buf_t   teach_command_buffer_;
   uv_buf_t   payload_command_buffer_;
+  uv_buf_t   speed_command_buffer_;
 
   UvWritePool write_request_pool_;
   uv_write_t write_request_;
   uv_write_t teach_command_write_request_;
   uv_write_t payload_command_write_request_;
+  uv_write_t speed_command_write_request_;
 
   uv_async_t async_;
 
@@ -75,6 +77,9 @@ struct UrControlServer
 
   // send the command to set the payload
   void send_payload_command();
+
+  // send the command to set the speed
+  void send_speed_command();
 };
 
 #endif

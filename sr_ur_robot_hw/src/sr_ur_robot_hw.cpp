@@ -122,6 +122,7 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   set_payload_server_ = node_.advertiseService("set_payload", &UrArmRobotHW::setPayload, this);
   ur_.start();
   ur_.send_payload_command();
+  ur_.send_speed_command();
 
   return true;
 }
@@ -181,6 +182,15 @@ bool UrArmRobotHW::setPayload(sr_ur_msgs::SetPayload::Request &req, sr_ur_msgs::
   std::vector<float> payload_center_of_mass_m(centre_of_mass_m, centre_of_mass_m+3);
   ur_.set_payload(mass_kg, payload_center_of_mass_m);
   ur_.send_payload_command();
+  resp.success = true;
+  return true;
+}
+
+bool UrArmRobotHW::setSpeed(sr_ur_msgs::SetSpeed::Request &req, sr_ur_msgs::SetSpeed::Response &resp)
+{
+  float speed = req.speed;
+  ur_.set_speed(speed);
+  ur_.send_speed_command();
   resp.success = true;
   return true;
 }

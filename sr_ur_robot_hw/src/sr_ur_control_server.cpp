@@ -40,6 +40,7 @@ const int32_t MSG_STOPJ          = 3;
 const int32_t MSG_SERVOJ         = 5;
 const int32_t MSG_SET_TEACH_MODE = 7;
 const int32_t MSG_SET_PAYLOAD    = 8;
+const int32_t MSG_SET_SPEED      = 15;
 
 const double  MULT_JOINTSTATE    = 10000.0;
 const size_t  RESPONSE_SIZE      = 512;
@@ -330,7 +331,25 @@ void UrControlServer::send_payload_command()
                         1,
                         command_sent_cb);
   ROS_ASSERT(0 == status);
+}
 
+void UrControlServer::send_speed_command()
+{
+  ROS_ASSERT(ur_);
+
+  ROS_WARN("Set %s robot speed = %d/1000", ur_->robot_side_,
+           ur_->speed_);
+
+  ur_set_speed *telegram = (ur_set_speed*)speed_command_buffer_.base;
+  memset(telegram, 0, speed_command_buffer_.len);
+  telegram->message_type_ = htonl(MSG_SET_SPEED);
+  telegram->speed_ = ur_->speed_;
+  int status = uv_write(&speed_command_write_request_,
+                        (uv_stream_t*)&command_stream_,
+                        &speed_command_buffer_,
+                        1,
+                        command_sent_cb);
+  ROS_ASSERT(0 == status);
 }
 
 void UvWritePool::init(void* ptr)

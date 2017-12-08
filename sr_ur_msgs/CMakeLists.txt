@@ -24,6 +24,7 @@ add_service_files(
   FILES
   SetTeachMode.srv
   SetPayload.srv
+  SetSpeed.srv
 )
 
 ## Generate actions in the 'action' folder

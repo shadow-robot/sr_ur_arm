@@ -1,11 +1,22 @@
+def set_speed_scale(speed):
+  # open socket to send the command to set the speed percentage
+  socket_open("127.0.0.1", 30002, "socket_1")
+  socket_send_string("set speed", "socket_1")
+  socket_send_string(speed, "socket_1")
+  socket_send_byte(10, "socket_1")
+  socket_close("socket_1")
+  
 def driverProg():
   MSG_QUIT = 1
   MSG_STOPJ = 3
   MSG_SERVOJ = 5
   MSG_SET_TEACH_MODE = 7
+  MSG_SET_PAYLOAD = 8
+  MSG_SET_SPEED = 15
   MULT = 10000.0
   MASS_DIVISOR = 1000.0
   COORD_DIVISOR = 1000.0
+  SPEED_DIVISOR = 1000.0
   SERVO_IDLE = 0
   SERVO_RUNNING = 1
   TEACH_MODE = 2
@@ -39,25 +50,16 @@ def driverProg():
       end
     end
   end
-  
-  # open socket to send the command to set the speed percentage
-  socket_open("127.0.0.1", 30002, "socket_1")
-  speed = 0.5
-  socket_send_string("set speed", "socket_1")
-  socket_send_string(speed, "socket_1")
-  socket_send_byte(10, "socket_1")
-  socket_close("socket_1")
-  
+
+  # set default speed
+  set_speed_scale(0.5)
+
   # open socket to receive commands from host
   socket_open("%s", %d)
   socket_send_string("Connected")
   thread_servo = run servoThread()
-  # Set the Shadow hand mass (Kg) and centre of gravity (m)
-  #set_payload(4.55, [0.0, 0.0, 0.12])
-  # payload if nothing is attached to the arm
+  # default payload: nothing attached to the arm
   set_payload(0.0, [0.0, 0.0, 0.0])
-  # payload for hand adapting plate only
-  #set_payload(0.050, [0.0, 0.0, 0.20])
   while True:
     telegram = socket_read_binary_integer(7)
     if telegram[0] == 7:
@@ -93,6 +95,15 @@ def driverProg():
           thread_servo = run servoThread()
           socket_send_string("Teach mode OFF")
         end
+      elif msg_type == MSG_SET_PAYLOAD:
+        mass = telegram[2]/MASS_DIVISOR
+        coords = [telegram[3]/COORD_DIVISOR,
+                  telegram[4]/COORD_DIVISOR,
+                  telegram[5]/COORD_DIVISOR]
+        set_payload(mass, coords)
+      elif msg_type == MSG_SET_SPEED:
+        speed = telegram[2]/SPEED_DIVISOR
+        set_speed_scale(speed)
       else:
         socket_send_string("Error")
       end

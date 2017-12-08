@@ -92,3 +92,13 @@ void UrRobotDriver::set_payload(float mass_kg, std::vector<float> center_of_mass
     payload_center_of_mass_mm_[i] = (int32_t)(center_of_mass_m[i]/1000.0);
   }
 }
+
+void UrRobotDriver::set_speed(float speed)
+{
+  if (speed < 0.0 || speed > 1.0)
+  {
+    ROS_WARN("UrRobotDriver: Cannot set speed to %f. Must be between 0.0 and 1.0 inclusive.", speed);
+  } else {
+    speed_ = (int32_t)(speed*1000.0);
+  }
+}

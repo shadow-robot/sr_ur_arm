@@ -80,6 +80,9 @@ struct UrRobotDriver
   // payload centre of mass in metres
   int32_t payload_center_of_mass_mm_[3];
 
+  // speed (zero to 1000)
+  int32_t speed_;
+
   UrEventLoop        *el_;
   UrControlServer    *ctrl_server_;
   UrRobotStateClient *rs_client_;
@@ -110,8 +113,14 @@ struct UrRobotDriver
   // send the command to set the payload
   void send_payload_command();
 
-  // set the payload (but don't send it)
+  // set the payload (but don't send it to the robot)
   void set_payload(float mass_kg, std::vector<float> center_of_mass_m);
+
+  // send the command to set the speed
+  void send_speed_command();
+
+  // set the speed (but don't send it to the robot)
+  void set_speed(float speed);
 };
 
 #endif
