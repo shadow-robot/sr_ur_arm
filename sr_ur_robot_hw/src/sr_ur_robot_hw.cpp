@@ -110,16 +110,24 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
     ROS_ERROR("Payload centre specified to UrArmRobotHW must be specified in 3 dimensions.");
     return false;
   }
-  
+
+  float speed_param;
+  if (!node_.getParam("speed_scale", speed_param))
+  {
+    ROS_WARN("No speed scale specified for UrArmRobotHW. Assuming 0.5.");
+    payload_mass_kg_param = 0.5;
+  }
 
   ur_.robot_side_               = strdup(robot_id_[0] == 'r' ? "RIGHT" : "LEFT");
   ur_.robot_address_            = strdup(robot_ip_address.c_str());
   ur_.host_address_             = strdup(control_pc_ip_address.c_str());
   ur_.robot_program_path_       = strdup(robot_program_path_param.c_str());
   ur_.set_payload(payload_mass_kg_param, payload_center_of_mass_m_param);
+  ur_.set_speed(speed_param);
 
   set_teach_mode_server_ = node_.advertiseService("set_teach_mode", &UrArmRobotHW::setTeachMode, this);
   set_payload_server_ = node_.advertiseService("set_payload", &UrArmRobotHW::setPayload, this);
+  set_speed_server_ = node_.advertiseService("set_speed", &UrArmRobotHW::setSpeed, this);
   ur_.start();
   ur_.send_payload_command();
   ur_.send_speed_command();
