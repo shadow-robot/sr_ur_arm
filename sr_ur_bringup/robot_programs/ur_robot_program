@@ -105,10 +105,12 @@ def driverProg():
         textmsg("Setting payload mass to ", mass)
         textmsg("Setting payload coordinates to ", coords)
         set_payload(mass, coords)
+        socket_send_string("Payload set")
       elif msg_type == MSG_SET_SPEED:
         speed = telegram[2]/SPEED_DIVISOR
         textmsg("Setting speed to ", speed)
         set_speed_scale(speed)
+        socket_send_string("Speed set")
       else:
         textmsg("Unknown message type received.")
         socket_send_string("Error")

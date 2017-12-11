@@ -137,8 +137,6 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   set_payload_server_ = node_.advertiseService("set_payload", &UrArmRobotHW::setPayload, this);
   set_speed_server_ = node_.advertiseService("set_speed", &UrArmRobotHW::setSpeed, this);
   ur_.start();
-  // ur_.send_payload_command();
-  // ur_.send_speed_command();
 
   return true;
 }

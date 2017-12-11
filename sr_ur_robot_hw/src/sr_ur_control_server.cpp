@@ -115,9 +115,24 @@ static void received_response_cb(uv_stream_t* command_stream,
 
   if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Teach mode OFF") == 0)
   {
+    ROS_WARN("Teach mode disabled on %s robot, setting speed.", ctrl_server->ur_->robot_side_);
+    ctrl_server->send_speed_command();
+    return;
+  }
+
+  if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Speed set") == 0)
+  {
+    ROS_WARN("Speed set on %s robot, setting payload.", ctrl_server->ur_->robot_side_);
+    ctrl_server->send_payload_command();
+    return;
+  }
+
+  if (!ctrl_server->ur_->robot_ready_to_move_ && strcmp(buffer.base, "Payload set") == 0)
+  {
     ROS_WARN("%s robot is ready to receive servo commands", ctrl_server->ur_->robot_side_);
     memset(buffer.base, 0, RESPONSE_SIZE);
     ctrl_server->ur_->robot_ready_to_move_ = true;
+    return;
   }
 
   if (strcmp(buffer.base, "Teach mode ON") == 0)
