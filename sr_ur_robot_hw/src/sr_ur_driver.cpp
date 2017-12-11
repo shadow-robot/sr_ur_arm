@@ -91,10 +91,10 @@ void UrRobotDriver::send_speed_command()
 
 void UrRobotDriver::set_payload(float mass_kg, std::vector<float> center_of_mass_m)
 {
-  payload_mass_g_ = (int32_t)(mass_kg/1000.0);
+  payload_mass_g_ = (int32_t)(mass_kg*1000.0);
   for (int i=0; i<3; i++)
   {
-    payload_center_of_mass_mm_[i] = (int32_t)(center_of_mass_m[i]/1000.0);
+    payload_center_of_mass_mm_[i] = (int32_t)(center_of_mass_m[i]*1000.0);
   }
 }
 
