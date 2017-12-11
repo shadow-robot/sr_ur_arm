@@ -219,6 +219,7 @@ void UrControlServer::start()
   write_request_.data   = (void*)this;
   teach_command_write_request_.data = (void*)this;
   payload_command_write_request_.data = (void*)this;
+  speed_command_write_request_.data = (void*)this;
   write_request_pool_.init((void*)this);
 
   command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
@@ -231,6 +232,8 @@ void UrControlServer::start()
   teach_command_buffer_.len   = sizeof(ur_servoj);
   payload_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
   payload_command_buffer_.len   = sizeof(ur_servoj);
+  speed_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  speed_command_buffer_.len   = sizeof(ur_servoj);
 
   status = uv_listen((uv_stream_t*)&server_stream_, 1, received_connection_cb);
   ROS_ASSERT(0 == status);
@@ -265,6 +268,7 @@ void UrControlServer::stop()
   free(response_buffer_.base);
   free(teach_command_buffer_.base);
   free(payload_command_buffer_.base);
+  free(speed_command_buffer_.base);
 }
 
 void UrControlServer::send_servo_command()

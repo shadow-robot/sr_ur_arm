@@ -84,6 +84,11 @@ void UrRobotDriver::send_payload_command()
   ctrl_server_->send_payload_command();
 }
 
+void UrRobotDriver::send_speed_command()
+{
+  ctrl_server_->send_speed_command();
+}
+
 void UrRobotDriver::set_payload(float mass_kg, std::vector<float> center_of_mass_m)
 {
   payload_mass_g_ = (int32_t)(mass_kg/1000.0);

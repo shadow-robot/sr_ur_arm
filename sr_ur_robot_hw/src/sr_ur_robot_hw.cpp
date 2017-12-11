@@ -115,7 +115,7 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   if (!node_.getParam("speed_scale", speed_param))
   {
     ROS_WARN("No speed scale specified for UrArmRobotHW. Assuming 0.5.");
-    payload_mass_kg_param = 0.5;
+    speed_param = 0.5;
   }
 
   ur_.robot_side_               = strdup(robot_id_[0] == 'r' ? "RIGHT" : "LEFT");
@@ -129,8 +129,8 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   set_payload_server_ = node_.advertiseService("set_payload", &UrArmRobotHW::setPayload, this);
   set_speed_server_ = node_.advertiseService("set_speed", &UrArmRobotHW::setSpeed, this);
   ur_.start();
-  ur_.send_payload_command();
-  ur_.send_speed_command();
+  // ur_.send_payload_command();
+  // ur_.send_speed_command();
 
   return true;
 }
