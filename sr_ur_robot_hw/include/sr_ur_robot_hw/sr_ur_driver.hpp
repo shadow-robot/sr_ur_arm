@@ -114,13 +114,13 @@ struct UrRobotDriver
   void send_payload_command();
 
   // set the payload (but don't send it to the robot)
-  void set_payload(float mass_kg, std::vector<float> center_of_mass_m);
+  bool set_payload(float mass_kg, std::vector<float> center_of_mass_m);
 
   // send the command to set the speed
   void send_speed_command();
 
   // set the speed (but don't send it to the robot)
-  void set_speed(float speed);
+  bool set_speed(float speed);
 };
 
 #endif

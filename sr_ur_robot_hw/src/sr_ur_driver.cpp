@@ -89,21 +89,36 @@ void UrRobotDriver::send_speed_command()
   ctrl_server_->send_speed_command();
 }
 
-void UrRobotDriver::set_payload(float mass_kg, std::vector<float> center_of_mass_m)
+bool UrRobotDriver::set_payload(float mass_kg, std::vector<float> center_of_mass_m)
 {
+  if (mass_kg < 0.0 || mass_kg > 8.0)
+  {
+    ROS_WARN("URRobotDriver: Cannot set payload to %f. Must be between 0.0 and 8.0 inclusive.", mass_kg);
+    return false;
+  }
+  for (int i=0; i<3; i++)
+  {
+    if (center_of_mass_m[i] < -1.0 || center_of_mass_m[i] > 1.0)
+    {
+      ROS_WARN("URRobotDriver: Cannot set payload coordinate %d to %f. Must be between -1.0 and 1.0 inclusive.", i, center_of_mass_m[i]);
+      return false;
+    }
+  }
   payload_mass_g_ = (int32_t)(mass_kg*1000.0);
   for (int i=0; i<3; i++)
   {
     payload_center_of_mass_mm_[i] = (int32_t)(center_of_mass_m[i]*1000.0);
   }
+  return true;
 }
 
-void UrRobotDriver::set_speed(float speed)
+bool UrRobotDriver::set_speed(float speed)
 {
   if (speed < 0.0 || speed > 1.0)
   {
     ROS_WARN("UrRobotDriver: Cannot set speed to %f. Must be between 0.0 and 1.0 inclusive.", speed);
-  } else {
-    speed_ = (int32_t)(speed*1000.0);
+    return false;
   }
+  speed_ = (int32_t)(speed*1000.0);
+  return true;
 }

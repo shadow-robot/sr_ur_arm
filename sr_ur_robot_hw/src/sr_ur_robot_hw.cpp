@@ -122,8 +122,16 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
     ROS_WARN("No speed scale specified for UrArmRobotHW. Assuming 0.5.");
     speed_param = 0.5;
   }
-  ur_.set_payload(payload_mass_kg_param, payload_center_of_mass_m_param);
-  ur_.set_speed(speed_param);
+  if (!ur_.set_payload(payload_mass_kg_param, payload_center_of_mass_m_param))
+  {
+    ROS_ERROR("Failed to set initial robot payload.");
+    return false;
+  }
+  if (!ur_.set_speed(speed_param))
+  {
+    ROS_ERROR("Failed to set initial robot speed.");
+    return false;
+  }
 
   set_teach_mode_server_ = node_.advertiseService("set_teach_mode", &UrArmRobotHW::setTeachMode, this);
   set_payload_server_ = node_.advertiseService("set_payload", &UrArmRobotHW::setPayload, this);
@@ -188,7 +196,11 @@ bool UrArmRobotHW::setPayload(sr_ur_msgs::SetPayload::Request &req, sr_ur_msgs::
   float mass_kg = req.mass_kg;
   float centre_of_mass_m[3] = {req.centre_of_mass_m.x, req.centre_of_mass_m.y, req.centre_of_mass_m.z};
   std::vector<float> payload_center_of_mass_m(centre_of_mass_m, centre_of_mass_m+3);
-  ur_.set_payload(mass_kg, payload_center_of_mass_m);
+  if (!ur_.set_payload(mass_kg, payload_center_of_mass_m))
+  {
+    resp.success = false;
+    return false;
+  }
   ur_.send_payload_command();
   resp.success = true;
   return true;
@@ -197,7 +209,11 @@ bool UrArmRobotHW::setPayload(sr_ur_msgs::SetPayload::Request &req, sr_ur_msgs::
 bool UrArmRobotHW::setSpeed(sr_ur_msgs::SetSpeed::Request &req, sr_ur_msgs::SetSpeed::Response &resp)
 {
   float speed = req.speed;
-  ur_.set_speed(speed);
+  if (!ur_.set_speed(speed))
+  {
+    resp.success = false;
+    return false;
+  }
   ur_.send_speed_command();
   resp.success = true;
   return true;

@@ -326,9 +326,11 @@ void UrControlServer::send_payload_command()
   ur_set_payload *telegram = (ur_set_payload*)payload_command_buffer_.base;
   memset(telegram, 0, payload_command_buffer_.len);
   telegram->message_type_ = htonl(MSG_SET_PAYLOAD);
-  telegram->payload_mass_g_ = ur_->payload_mass_g_;
-  std::copy(&(ur_->payload_center_of_mass_mm_),&(ur_->payload_center_of_mass_mm_)+3,&(telegram->payload_coords_mm_));
-  // telegram->payload_coords_mm_ = ur_->payload_center_of_mass_mm_;
+  telegram->payload_mass_g_ = htonl(ur_->payload_mass_g_);
+  for (int i=0; i<3; i++)
+  {
+    telegram->payload_coords_mm_[i] = htonl(ur_->payload_center_of_mass_mm_[i]);
+  }
   int status = uv_write(&payload_command_write_request_,
                         (uv_stream_t*)&command_stream_,
                         &payload_command_buffer_,
@@ -347,7 +349,7 @@ void UrControlServer::send_speed_command()
   ur_set_speed *telegram = (ur_set_speed*)speed_command_buffer_.base;
   memset(telegram, 0, speed_command_buffer_.len);
   telegram->message_type_ = htonl(MSG_SET_SPEED);
-  telegram->speed_ = ur_->speed_;
+  telegram->speed_ = htonl(ur_->speed_);
   int status = uv_write(&speed_command_write_request_,
                         (uv_stream_t*)&command_stream_,
                         &speed_command_buffer_,
