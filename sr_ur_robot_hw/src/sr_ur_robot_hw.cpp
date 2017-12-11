@@ -92,6 +92,11 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
     return false;
   }
 
+  ur_.robot_side_         = strdup(robot_id_[0] == 'r' ? "RIGHT" : "LEFT");
+  ur_.robot_address_      = strdup(robot_ip_address.c_str());
+  ur_.host_address_       = strdup(control_pc_ip_address.c_str());
+  ur_.robot_program_path_ = strdup(robot_program_path_param.c_str());
+
   float payload_mass_kg_param;
   if (!node_.getParam("payload_mass_kg", payload_mass_kg_param))
   {
@@ -117,11 +122,6 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
     ROS_WARN("No speed scale specified for UrArmRobotHW. Assuming 0.5.");
     speed_param = 0.5;
   }
-
-  ur_.robot_side_               = strdup(robot_id_[0] == 'r' ? "RIGHT" : "LEFT");
-  ur_.robot_address_            = strdup(robot_ip_address.c_str());
-  ur_.host_address_             = strdup(control_pc_ip_address.c_str());
-  ur_.robot_program_path_       = strdup(robot_program_path_param.c_str());
   ur_.set_payload(payload_mass_kg_param, payload_center_of_mass_m_param);
   ur_.set_speed(speed_param);
 
