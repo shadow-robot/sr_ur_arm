@@ -1,4 +1,5 @@
 def driverProg():
+  textmsg("Program starting.")
   MSG_QUIT = 1
   MSG_STOPJ = 3
   MSG_SERVOJ = 5
@@ -65,6 +66,7 @@ def driverProg():
     if telegram[0] == 7:
       msg_type = telegram[1]
       if msg_type == MSG_QUIT:
+        textmsg("Quit command received.")
         socket_send_string("Quit")
         break
       elif msg_type == MSG_SERVOJ:
@@ -76,6 +78,7 @@ def driverProg():
              telegram[7]/MULT]
         set_commanded_positions(q)
       elif msg_type == MSG_STOPJ:
+        textmsg("Stop command received.")
         socket_send_string("Stop")
         stopj(1.0)
       elif msg_type == MSG_SET_TEACH_MODE:
@@ -117,5 +120,6 @@ def driverProg():
       end
     end
   end
+  textmsg("Program exiting.")
   socket_close()
 end
