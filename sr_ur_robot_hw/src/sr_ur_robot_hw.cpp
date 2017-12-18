@@ -135,7 +135,8 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
 
   set_teach_mode_server_ = node_.advertiseService("set_teach_mode", &UrArmRobotHW::setTeachMode, this);
   set_payload_server_ = node_.advertiseService("set_payload", &UrArmRobotHW::setPayload, this);
-  set_speed_server_ = node_.advertiseService("set_speed", &UrArmRobotHW::setSpeed, this);
+  // To be reinstated once speed-setting in moveit is connected up. See #SRC-1135.
+  // set_speed_server_ = node_.advertiseService("set_speed", &UrArmRobotHW::setSpeed, this);
   ur_.start();
 
   return true;
