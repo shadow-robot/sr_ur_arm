@@ -29,6 +29,12 @@
 #include <pthread.h>
 
 const size_t NUM_OF_JOINTS = 6;
+const float MIN_PAYLOAD = 0.0;
+const float MAX_PAYLOAD = 10.0;
+const float MIN_PAYLOAD_COORD = -1.0;
+const float MAX_PAYLOAD_COORD = 1.0;
+const float MIN_SPEED = 0.0;
+const float MAX_SPEED = 1.0;
 
 // it is expected that joints with this name are configured in the urdf
 // for bimanual systems a prefix may be added
@@ -74,10 +80,10 @@ struct UrRobotDriver
   // left or right
   char *robot_side_;
 
-  // payload mass in kilograms
+  // payload mass in grams
   int32_t payload_mass_g_;
 
-  // payload centre of mass in metres
+  // payload centre of mass in millimetres
   int32_t payload_center_of_mass_mm_[3];
 
   // speed (zero to 1000)

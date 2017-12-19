@@ -104,8 +104,7 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
     payload_mass_kg_param = 0.0;
   }
 
-  float default_com[] = {0.0,0.0,0.0};
-  std::vector<float> payload_center_of_mass_m_param(default_com, default_com+3);
+  std::vector<float> payload_center_of_mass_m_param(3, 0.0);
   if (!node_.getParam("payload_center_of_mass_m", payload_center_of_mass_m_param))
   {
     ROS_WARN("No payload centre of mass specified for UrArmRobotHW. Assuming [0.0, 0.0, 0.0].");
