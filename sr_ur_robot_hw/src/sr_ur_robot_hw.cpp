@@ -132,7 +132,6 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
     return false;
   }
 
-  // Removed teach mode setting, as teach mode should be toggled with existing shadow service for safety
   set_teach_mode_server_ = node_.advertiseService("set_teach_mode", &UrArmRobotHW::setTeachMode, this);
   set_payload_server_ = node_.advertiseService("set_payload", &UrArmRobotHW::setPayload, this);
   // To be reinstated once speed-setting in moveit is connected up. See #SRC-1135.
