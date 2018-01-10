@@ -24,10 +24,17 @@
 #ifndef SR_UR_DRIVER_HPP_
 #define SR_UR_DRIVER_HPP_
 
+#include <vector>
 #include <stdint.h>
 #include <pthread.h>
 
 const size_t NUM_OF_JOINTS = 6;
+const float MIN_PAYLOAD = 0.0;
+const float MAX_PAYLOAD = 10.0;
+const float MIN_PAYLOAD_COORD = -1.0;
+const float MAX_PAYLOAD_COORD = 1.0;
+const float MIN_SPEED = 0.0;
+const float MAX_SPEED = 1.0;
 
 // it is expected that joints with this name are configured in the urdf
 // for bimanual systems a prefix may be added
@@ -73,6 +80,15 @@ struct UrRobotDriver
   // left or right
   char *robot_side_;
 
+  // payload mass in grams
+  int32_t payload_mass_g_;
+
+  // payload centre of mass in millimetres
+  int32_t payload_center_of_mass_mm_[3];
+
+  // speed (zero to 1000)
+  int32_t speed_;
+
   UrEventLoop        *el_;
   UrControlServer    *ctrl_server_;
   UrRobotStateClient *rs_client_;
@@ -99,6 +115,18 @@ struct UrRobotDriver
 
   // send the command to set teach mode on/off to the robot
   void send_teach_mode_command(bool teach_mode);
+
+  // send the command to set the payload
+  void send_payload_command();
+
+  // set the payload (but don't send it to the robot)
+  bool set_payload(float mass_kg, std::vector<float> center_of_mass_m);
+
+  // send the command to set the speed
+  void send_speed_command();
+
+  // set the speed (but don't send it to the robot)
+  bool set_speed(float speed);
 };
 
 #endif

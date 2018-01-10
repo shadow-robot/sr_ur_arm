@@ -5,6 +5,7 @@ project(sr_ur_msgs)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  geometry_msgs
   message_generation
 )
 
@@ -22,6 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   SetTeachMode.srv
+  SetPayload.srv
+  SetSpeed.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -32,7 +35,10 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(DEPENDENCIES)
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs
+)
 
 ###################################
 ## catkin specific configuration ##

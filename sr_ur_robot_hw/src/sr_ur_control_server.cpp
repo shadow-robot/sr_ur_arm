@@ -39,9 +39,12 @@ const int32_t MSG_QUIT           = 1;
 const int32_t MSG_STOPJ          = 3;
 const int32_t MSG_SERVOJ         = 5;
 const int32_t MSG_SET_TEACH_MODE = 7;
+const int32_t MSG_SET_PAYLOAD    = 8;
+const int32_t MSG_SET_SPEED      = 15;
 
 const double  MULT_JOINTSTATE    = 10000.0;
 const size_t  RESPONSE_SIZE      = 512;
+const int     FLOAT_CHARS        = 10;
 
 // reuse the preallocated buffer for storing the robot's response
 // when a command is send from the server in the host to the client in the robot
@@ -114,7 +117,10 @@ static void received_response_cb(uv_stream_t* command_stream,
   {
     ROS_WARN("%s robot is ready to receive servo commands", ctrl_server->ur_->robot_side_);
     memset(buffer.base, 0, RESPONSE_SIZE);
+    ctrl_server->send_payload_command();
+    ctrl_server->send_speed_command();
     ctrl_server->ur_->robot_ready_to_move_ = true;
+    return;
   }
 
   if (strcmp(buffer.base, "Teach mode ON") == 0)
@@ -215,6 +221,8 @@ void UrControlServer::start()
   command_stream_.data  = (void*)this;
   write_request_.data   = (void*)this;
   teach_command_write_request_.data = (void*)this;
+  payload_command_write_request_.data = (void*)this;
+  speed_command_write_request_.data = (void*)this;
   write_request_pool_.init((void*)this);
 
   command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
@@ -225,6 +233,10 @@ void UrControlServer::start()
   // the reason is that the ur_robot_program expects messages of a unique size (7 bytes)
   teach_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
   teach_command_buffer_.len   = sizeof(ur_servoj);
+  payload_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  payload_command_buffer_.len   = sizeof(ur_servoj);
+  speed_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  speed_command_buffer_.len   = sizeof(ur_servoj);
 
   status = uv_listen((uv_stream_t*)&server_stream_, 1, received_connection_cb);
   ROS_ASSERT(0 == status);
@@ -258,6 +270,8 @@ void UrControlServer::stop()
   free(command_buffer_.base);
   free(response_buffer_.base);
   free(teach_command_buffer_.base);
+  free(payload_command_buffer_.base);
+  free(speed_command_buffer_.base);
 }
 
 void UrControlServer::send_servo_command()
@@ -300,6 +314,51 @@ void UrControlServer::send_teach_mode_command(int32_t teach_mode)
                         command_sent_cb);
   ROS_ASSERT(0 == status);
 
+}
+
+void UrControlServer::send_payload_command()
+{
+  ROS_ASSERT(ur_);
+
+  ROS_WARN("Set %s robot payload = %dg (%d, %d, %d)mm", ur_->robot_side_,
+           ur_->payload_mass_g_,
+           ur_->payload_center_of_mass_mm_[0],
+           ur_->payload_center_of_mass_mm_[1],
+           ur_->payload_center_of_mass_mm_[2]);
+
+  ur_set_payload *telegram = (ur_set_payload*)payload_command_buffer_.base;
+  memset(telegram, 0, payload_command_buffer_.len);
+  telegram->message_type_ = htonl(MSG_SET_PAYLOAD);
+  telegram->payload_mass_g_ = htonl(ur_->payload_mass_g_);
+  for (int i=0; i<3; i++)
+  {
+    telegram->payload_coords_mm_[i] = htonl(ur_->payload_center_of_mass_mm_[i]);
+  }
+  int status = uv_write(&payload_command_write_request_,
+                        (uv_stream_t*)&command_stream_,
+                        &payload_command_buffer_,
+                        1,
+                        command_sent_cb);
+  ROS_ASSERT(0 == status);
+}
+
+void UrControlServer::send_speed_command()
+{
+  ROS_ASSERT(ur_);
+
+  ROS_WARN("Set %s robot speed = %d/1000", ur_->robot_side_,
+           ur_->speed_);
+
+  ur_set_speed *telegram = (ur_set_speed*)speed_command_buffer_.base;
+  memset(telegram, 0, speed_command_buffer_.len);
+  telegram->message_type_ = htonl(MSG_SET_SPEED);
+  telegram->speed_ = htonl(ur_->speed_);
+  int status = uv_write(&speed_command_write_request_,
+                        (uv_stream_t*)&command_stream_,
+                        &speed_command_buffer_,
+                        1,
+                        command_sent_cb);
+  ROS_ASSERT(0 == status);
 }
 
 void UvWritePool::init(void* ptr)

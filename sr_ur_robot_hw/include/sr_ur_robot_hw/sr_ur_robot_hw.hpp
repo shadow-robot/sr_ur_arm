@@ -31,6 +31,8 @@
 #include <realtime_tools/realtime_publisher.h>
 #include <sr_ur_robot_hw/sr_ur_driver.hpp>
 #include <sr_ur_msgs/SetTeachMode.h>
+#include <sr_ur_msgs/SetPayload.h>
+#include <sr_ur_msgs/SetSpeed.h>
 
 
 namespace sr_ur_robot_hw
@@ -70,8 +72,14 @@ protected:
 
   bool setTeachMode(sr_ur_msgs::SetTeachMode::Request &req, sr_ur_msgs::SetTeachMode::Response &resp);
 
+  bool setPayload(sr_ur_msgs::SetPayload::Request &req, sr_ur_msgs::SetPayload::Response &resp);
+
+  bool setSpeed(sr_ur_msgs::SetSpeed::Request &req, sr_ur_msgs::SetSpeed::Response &resp);
+
   bool teach_mode_;
   ros::ServiceServer set_teach_mode_server_;
+  ros::ServiceServer set_payload_server_;
+  ros::ServiceServer set_speed_server_;
 
 private:
 

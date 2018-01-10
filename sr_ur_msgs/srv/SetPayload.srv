@@ -1,0 +1,4 @@
+float32 mass_kg
+geometry_msgs/Point32 centre_of_mass_m
+---
+bool success

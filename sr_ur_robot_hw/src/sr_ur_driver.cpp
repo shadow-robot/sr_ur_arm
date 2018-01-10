@@ -78,3 +78,47 @@ void UrRobotDriver::send_teach_mode_command(bool teach_mode)
 {
   ctrl_server_->send_teach_mode_command((int32_t)teach_mode);
 }
+
+void UrRobotDriver::send_payload_command()
+{
+  ctrl_server_->send_payload_command();
+}
+
+void UrRobotDriver::send_speed_command()
+{
+  ctrl_server_->send_speed_command();
+}
+
+bool UrRobotDriver::set_payload(float mass_kg, std::vector<float> center_of_mass_m)
+{
+  if (mass_kg < MIN_PAYLOAD || mass_kg > MAX_PAYLOAD)
+  {
+    ROS_WARN("URRobotDriver: Cannot set payload to %f. Must be between %f and %f inclusive.", mass_kg, MIN_PAYLOAD, MAX_PAYLOAD);
+    return false;
+  }
+  for (int i=0; i<3; i++)
+  {
+    if (center_of_mass_m[i] < MIN_PAYLOAD_COORD || center_of_mass_m[i] > MAX_PAYLOAD_COORD)
+    {
+      ROS_WARN("URRobotDriver: Cannot set payload coordinate %d to %f. Must be between %f and %f inclusive.", i, center_of_mass_m[i], MIN_PAYLOAD_COORD, MAX_PAYLOAD_COORD);
+      return false;
+    }
+  }
+  payload_mass_g_ = (int32_t)(mass_kg*1000.0);
+  for (int i=0; i<3; i++)
+  {
+    payload_center_of_mass_mm_[i] = (int32_t)(center_of_mass_m[i]*1000.0);
+  }
+  return true;
+}
+
+bool UrRobotDriver::set_speed(float speed)
+{
+  if (speed < MIN_SPEED || speed > MAX_SPEED)
+  {
+    ROS_WARN("UrRobotDriver: Cannot set speed to %f. Must be between %f and %f inclusive.", speed, MIN_SPEED, MAX_SPEED);
+    return false;
+  }
+  speed_ = (int32_t)(speed*1000.0);
+  return true;
+}
