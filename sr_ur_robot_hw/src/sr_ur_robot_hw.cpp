@@ -27,7 +27,10 @@
 #include <std_msgs/Float64MultiArray.h>
 #include "sr_ur_robot_hw/sr_ur_robot_hw.hpp"
 
-PLUGINLIB_EXPORT_CLASS( sr_ur_robot_hw::UrArmRobotHW, hardware_interface::RobotHW)
+#include <string>
+#include <vector>
+
+PLUGINLIB_EXPORT_CLASS(sr_ur_robot_hw::UrArmRobotHW, hardware_interface::RobotHW)
 
 using namespace std;
 
@@ -146,7 +149,6 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
 {
   if (++loop_count_ >= UR_PERIOD)
   {
-
     pthread_mutex_lock(&ur_.robot_state_mutex_);
     for (size_t i = 0; i < NUM_OF_JOINTS; ++i)
     {
@@ -155,15 +157,15 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
       joint_effort_[i] = ur_.joint_motor_currents_[i];
       if (teach_mode_ && ur_.robot_ready_to_move_)
       {
-	 joint_position_command_[i] = joint_position_[i];
+        joint_position_command_[i] = joint_position_[i];
       }
       else if (!teach_mode_ && !ur_.robot_ready_to_move_)
       {
-	 joint_position_command_[i] = ur_.target_positions_[i];
+        joint_position_command_[i] = ur_.target_positions_[i];
       }
     }
     pthread_mutex_unlock(&ur_.robot_state_mutex_);
- }
+  }
 }
 
 void UrArmRobotHW::write(const ros::Time& time, const ros::Duration& period)
@@ -216,5 +218,4 @@ bool UrArmRobotHW::setSpeed(sr_ur_msgs::SetSpeed::Request &req, sr_ur_msgs::SetS
   resp.success = true;
   return true;
 }
-
-}
+} // namespace sr_ur_robot_hw
