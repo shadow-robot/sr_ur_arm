@@ -31,7 +31,7 @@ class SrUrPoseRecorder(object):
 
     def run(self):
         loginfo("Recording started")
-        while self.jstate == None:
+        while self.jstate is None:
             sleep(0.1)
 
         pose = {jn: jp for jn, jp in izip(
