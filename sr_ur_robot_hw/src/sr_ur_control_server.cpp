@@ -218,21 +218,13 @@ void UrControlServer::start()
   ROS_ASSERT(0 == status);
   int reverse_port = ntohs(((struct sockaddr_in*)&address_with_bound_port)->sin_port);
 
-<<<<<<< Updated upstream
-  server_stream_.data   = (void*)this;
-  command_stream_.data  = (void*)this;
-  write_request_.data   = (void*)this;
-  teach_command_write_request_.data = (void*)this;
-  payload_command_write_request_.data = (void*)this;
-  speed_command_write_request_.data = (void*)this;
-  write_request_pool_.init((void*)this);
-=======
   server_stream_.data   = reinterpret_cast<void*>(this);
   command_stream_.data  = reinterpret_cast<void*>(this);
   write_request_.data   = reinterpret_cast<void*>(this);
   teach_command_write_request_.data = reinterpret_cast<void*>(this);
+  payload_command_write_request_.data = reinterpret_cast<void*>(this);
+  speed_command_write_request_.data = reinterpret_cast<void*>(this);
   write_request_pool_.init(reinterpret_cast<void*>(this));
->>>>>>> Stashed changes
 
   command_buffer_.base  = reinterpret_cast<char*>(malloc(sizeof(ur_servoj)));
   command_buffer_.len   = sizeof(ur_servoj);
