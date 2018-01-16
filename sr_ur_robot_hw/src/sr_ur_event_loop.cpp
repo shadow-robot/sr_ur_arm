@@ -28,7 +28,7 @@
 // function for the thread that runs the event loop
 static void *asynchronous_io_loop(void *data)
 {
-  UrEventLoop* el = (UrEventLoop*)data;
+  UrEventLoop* el = reinterpret_cast<UrEventLoop*>(data);
 
   // run the loop
   uv_run_mode run_mode = UV_RUN_DEFAULT;
