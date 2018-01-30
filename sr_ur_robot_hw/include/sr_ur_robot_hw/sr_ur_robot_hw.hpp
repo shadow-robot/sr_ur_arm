@@ -42,7 +42,7 @@ class UrArmRobotHW : public hardware_interface::RobotHW
 {
 public:
   UrArmRobotHW();
-  virtual ~UrArmRobotHW(){}
+  virtual ~UrArmRobotHW() {}
 
   virtual bool init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh);
   virtual void read(const ros::Time& time, const ros::Duration& period);

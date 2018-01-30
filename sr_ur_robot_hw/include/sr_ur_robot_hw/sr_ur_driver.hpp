@@ -45,7 +45,7 @@ const char ur_joints[NUM_OF_JOINTS][sizeof("shoulder_lift_joint")] = {"shoulder_
                                                                       "wrist_2_joint",
                                                                       "wrist_3_joint"};
 
-const int UR_PERIOD = 8; // msec
+const int UR_PERIOD = 8;  // msec
 
 struct UrEventLoop;
 struct UrControlServer;
@@ -55,15 +55,15 @@ struct UrProgramLoader;
 struct UrRobotDriver
 {
   bool robot_ready_to_move_;
-  double target_positions_[NUM_OF_JOINTS];     // radians
-  double previous_targets_[NUM_OF_JOINTS];     // radians
+  double target_positions_[NUM_OF_JOINTS];  // radians
+  double previous_targets_[NUM_OF_JOINTS];  // radians
 
   // synchronize target_positions between controller and driver
   pthread_mutex_t write_mutex_;
 
-  double joint_positions_     [NUM_OF_JOINTS]; // radians
-  double joint_velocities_    [NUM_OF_JOINTS]; // radians/sec
-  double joint_motor_currents_[NUM_OF_JOINTS]; // Amperes
+  double joint_positions_     [NUM_OF_JOINTS];  // radians
+  double joint_velocities_    [NUM_OF_JOINTS];  // radians/sec
+  double joint_motor_currents_[NUM_OF_JOINTS];  // Amperes
 
   // synchronize robot state between controller and driver
   pthread_mutex_t robot_state_mutex_;
