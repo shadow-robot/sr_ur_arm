@@ -33,7 +33,8 @@
 #include <sr_ur_msgs/SetTeachMode.h>
 #include <sr_ur_msgs/SetPayload.h>
 #include <sr_ur_msgs/SetSpeed.h>
-
+#include <string>
+#include <vector>
 
 namespace sr_ur_robot_hw
 {
@@ -41,7 +42,7 @@ class UrArmRobotHW : public hardware_interface::RobotHW
 {
 public:
   UrArmRobotHW();
-  virtual ~UrArmRobotHW(){};
+  virtual ~UrArmRobotHW(){}
 
   virtual bool init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh);
   virtual void read(const ros::Time& time, const ros::Duration& period);
@@ -80,10 +81,6 @@ protected:
   ros::ServiceServer set_teach_mode_server_;
   ros::ServiceServer set_payload_server_;
   ros::ServiceServer set_speed_server_;
-
-private:
-
 };
-}
-
+}  // namespace sr_ur_robot_hw
 #endif

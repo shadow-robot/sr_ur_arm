@@ -218,4 +218,4 @@ bool UrArmRobotHW::setSpeed(sr_ur_msgs::SetSpeed::Request &req, sr_ur_msgs::SetS
   resp.success = true;
   return true;
 }
-} // namespace sr_ur_robot_hw
+}  // namespace sr_ur_robot_hw

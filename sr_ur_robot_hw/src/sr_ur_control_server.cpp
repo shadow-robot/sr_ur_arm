@@ -239,7 +239,7 @@ void UrControlServer::start()
   speed_command_buffer_.base  = reinterpret_cast<char*>(malloc(sizeof(ur_servoj)));
   speed_command_buffer_.len   = sizeof(ur_servoj);
 
-  status = uv_listen((uv_stream_t*)&server_stream_, 1, received_connection_cb);
+  status = uv_listen(reinterpret_cast<uv_stream_t*>(&server_stream_), 1, received_connection_cb);
   ROS_ASSERT(0 == status);
   ROS_WARN("UrArmController of %s robot started server on address %s and listening on port %d",
            ur_->robot_side_, ur_->host_address_, reverse_port);
@@ -263,8 +263,8 @@ void UrControlServer::stop()
 
   pthread_mutex_destroy(&ur_->write_mutex_);
 
-  uv_close(reinterpret_cast<uv_stream_t*>(&server_stream_, NULL));
-  uv_close(reinterpret_cast<uv_stream_t*>(&command_stream_, NULL));
+  uv_close(reinterpret_cast<uv_stream_t*>(&server_stream_), NULL);
+  uv_close(reinterpret_cast<uv_stream_t*>(&command_stream_), NULL);
 
   ur_->el_->stop();
 
