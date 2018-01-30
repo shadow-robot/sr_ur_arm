@@ -74,7 +74,7 @@ static void client_connected_cb(uv_connect_t* connection_request, int status)
   ROS_ASSERT(connection_request == &urpl->connect_to_robot_request);
 
   status = uv_write(&urpl->send_file_request,
-                    reinterpret_cast<uv_handle_t*>(&urpl->send_file_stream),
+                    reinterpret_cast<uv_stream_t*>(&urpl->send_file_stream),
                     &urpl->file_buffer,
                     1,
                     file_sent_cb);
@@ -95,7 +95,7 @@ static void file_loaded_cb(uv_fs_t *file_request)
   {
     urpl->prepare_file_buffer();
     int status = uv_write(&urpl->send_file_request,
-                      reinterpret_cast<uv_handle_t*>(&urpl->send_file_stream),
+                      reinterpret_cast<uv_stream_t*>(&urpl->send_file_stream),
                       &urpl->file_buffer,
                       1,
                       file_sent_cb);

@@ -263,8 +263,8 @@ void UrControlServer::stop()
 
   pthread_mutex_destroy(&ur_->write_mutex_);
 
-  uv_close(reinterpret_cast<uv_stream_t*>(&server_stream_), NULL);
-  uv_close(reinterpret_cast<uv_stream_t*>(&command_stream_), NULL);
+  uv_close(reinterpret_cast<uv_handle_t*>(&server_stream_), NULL);
+  uv_close(reinterpret_cast<uv_handle_t*>(&command_stream_), NULL);
 
   ur_->el_->stop();
 
