@@ -32,8 +32,6 @@
 
 PLUGINLIB_EXPORT_CLASS(sr_ur_robot_hw::UrArmRobotHW, hardware_interface::RobotHW)
 
-using namespace std;
-
 namespace sr_ur_robot_hw
 {
 UrArmRobotHW::UrArmRobotHW() :
@@ -50,8 +48,6 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
     joint_prefix_ = robot_id_ + '_';
   }
 
-  using namespace hardware_interface;
-
   joint_position_command_.resize(NUM_OF_JOINTS);
   joint_position_.resize(NUM_OF_JOINTS);
   joint_effort_.resize(NUM_OF_JOINTS);
@@ -66,29 +62,29 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
     ROS_INFO_STREAM("Joint state interface for arm joint " << joint_name);
     joint_position_[i] = joint_effort_[i] = joint_velocity_[i] = 0.0;
     joint_state_interface_.registerHandle(
-      JointStateHandle(joint_name, &joint_position_[i], &joint_velocity_[i], &joint_effort_[i]));
+      hardware_interface::JointStateHandle(joint_name, &joint_position_[i], &joint_velocity_[i], &joint_effort_[i]));
     position_joint_interface_.registerHandle(
-      JointHandle(joint_state_interface_.getHandle(joint_name), &joint_position_command_[i]));
+      hardware_interface::JointHandle(joint_state_interface_.getHandle(joint_name), &joint_position_command_[i]));
   }
   registerInterface(&joint_state_interface_);
   registerInterface(&position_joint_interface_);
 
 
-  string robot_ip_address;
+  std::string robot_ip_address;
   if (!node_.getParam("robot_ip_address", robot_ip_address))
   {
     ROS_ERROR("No IP address specified for sending commands to UrArmRobotHW");
     return false;
   }
 
-  string control_pc_ip_address;
+  std::string control_pc_ip_address;
   if (!node_.getParam("control_pc_ip_address", control_pc_ip_address))
   {
     ROS_ERROR("No IP address specified for receiving state from UrArmRobotHW");
     return false;
   }
 
-  string robot_program_path_param;
+  std::string robot_program_path_param;
   if (!node_.getParam("robot_program_path", robot_program_path_param))
   {
     ROS_ERROR("No robot program path specified for UrArmRobotHW");
