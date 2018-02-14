@@ -42,7 +42,7 @@ static void file_sent_cb(uv_write_t* file_request, int status)
   ROS_ASSERT(file_request);
   ROS_ASSERT(file_request->data);
 
-  UrProgramLoader *urpl = (UrProgramLoader*) file_request->data;
+  UrProgramLoader *urpl = reinterpret_cast<UrProgramLoader*>(file_request->data);
   ROS_ASSERT(file_request == &urpl->send_file_request);
 
   if (!urpl->main_program_currently)
@@ -53,7 +53,7 @@ static void file_sent_cb(uv_write_t* file_request, int status)
   else
   {
     uv_fs_req_cleanup(&urpl->file_request);
-    uv_close((uv_handle_t*)&urpl->send_file_stream, NULL);
+    uv_close(reinterpret_cast<uv_handle_t*>(&urpl->send_file_stream), NULL);
     free(urpl->ur_->robot_program_path_);
     free(urpl->file_path);
     free(urpl->file_buffer.base);
@@ -70,11 +70,11 @@ static void client_connected_cb(uv_connect_t* connection_request, int status)
   ROS_ASSERT(connection_request);
   ROS_ASSERT(connection_request->data);
 
-  UrProgramLoader *urpl = (UrProgramLoader*) connection_request->data;
+  UrProgramLoader *urpl = reinterpret_cast<UrProgramLoader*>(connection_request->data);
   ROS_ASSERT(connection_request == &urpl->connect_to_robot_request);
 
   status = uv_write(&urpl->send_file_request,
-                    (uv_stream_t*)&urpl->send_file_stream,
+                    reinterpret_cast<uv_stream_t*>(&urpl->send_file_stream),
                     &urpl->file_buffer,
                     1,
                     file_sent_cb);
@@ -88,14 +88,14 @@ static void file_loaded_cb(uv_fs_t *file_request)
   ROS_ASSERT(file_request);
   ROS_ASSERT(file_request->data);
 
-  UrProgramLoader *urpl = (UrProgramLoader*) file_request->data;
+  UrProgramLoader *urpl = reinterpret_cast<UrProgramLoader*>(file_request->data);
   ROS_ASSERT(file_request == &urpl->file_request);
 
   if (urpl->main_program_currently)
   {
     urpl->prepare_file_buffer();
     int status = uv_write(&urpl->send_file_request,
-                      (uv_stream_t*)&urpl->send_file_stream,
+                      reinterpret_cast<uv_stream_t*>(&urpl->send_file_stream),
                       &urpl->file_buffer,
                       1,
                       file_sent_cb);
@@ -119,7 +119,7 @@ static void file_opened_cb(uv_fs_t *file_request)
   ROS_ASSERT(file_request);
   ROS_ASSERT(file_request->data);
 
-  UrProgramLoader *urpl = (UrProgramLoader*) file_request->data;
+  UrProgramLoader *urpl = reinterpret_cast<UrProgramLoader*>(file_request->data);
   ROS_ASSERT(file_request == &urpl->file_request);
   ROS_ASSERT(-1 != file_request->result);
 
@@ -184,7 +184,7 @@ void UrProgramLoader::load_file_from_disk()
   }
   ROS_ASSERT(file_size > 0);
 
-  file_buffer.base = (char*)realloc((void*)file_buffer.base, file_size);
+  file_buffer.base = reinterpret_cast<char*>(realloc(reinterpret_cast<char*>(file_buffer.base), file_size));
   file_buffer.len = file_size;
   ROS_ASSERT(file_buffer.base);
 
@@ -204,10 +204,10 @@ void UrProgramLoader::send_program(int reverse_port)
 {
   ROS_ASSERT(ur_);
 
-  connect_to_robot_request.data = (void*)this;
-  send_file_request.data        = (void*)this;
-  send_file_stream.data         = (void*)this;
-  file_request.data             = (void*)this;
+  connect_to_robot_request.data = reinterpret_cast<char*>(this);
+  send_file_request.data        = reinterpret_cast<char*>(this);
+  send_file_stream.data         = reinterpret_cast<char*>(this);
+  file_request.data             = reinterpret_cast<char*>(this);
 
   host_port = reverse_port;
   // initialise stream for client that writes a robot program

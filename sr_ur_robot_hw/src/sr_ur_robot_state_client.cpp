@@ -42,7 +42,7 @@ static uv_buf_t allocate_robot_state_buffer(uv_handle_t* state_stream, size_t)
 {
   ROS_ASSERT(state_stream);
   ROS_ASSERT(state_stream->data);
-  UrRobotStateClient *rs_client = (UrRobotStateClient*) state_stream->data;
+  UrRobotStateClient *rs_client = reinterpret_cast<UrRobotStateClient*>(state_stream->data);
   return rs_client->buffer_;
 }
 
@@ -52,8 +52,8 @@ static uv_buf_t allocate_robot_state_buffer(uv_handle_t* state_stream, size_t)
 static double ntohd(double *big_endian_number)
 {
   double little_endian_number;
-  char *big_endian_data    = (char*)big_endian_number;
-  char *little_endian_data = (char*)&little_endian_number;
+  char *big_endian_data    = reinterpret_cast<char*>(big_endian_number);
+  char *little_endian_data = reinterpret_cast<char*>(&little_endian_number);
 
   size_t length = sizeof(double);
   for (size_t i = 0; i < length; ++i)
@@ -71,7 +71,7 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
 {
   ROS_ASSERT(state_stream);
   ROS_ASSERT(state_stream->data);
-  UrRobotStateClient *rs_client = (UrRobotStateClient*) state_stream->data;
+  UrRobotStateClient *rs_client = reinterpret_cast<UrRobotStateClient*>(state_stream->data);
 
   ROS_ASSERT(buffer.base);
 
@@ -126,7 +126,7 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
     }
   }
 
-  ur_robot_state *robot_state = (ur_robot_state*) pdata;
+  ur_robot_state *robot_state = reinterpret_cast<ur_robot_state*>(pdata);
 
   // the range of motion of each robot joint is 2 full rotations
   // if a value is reported outside these limits it's a communication error
@@ -165,11 +165,11 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
 // a client in the host PC has successfully connected to a server in the robot at ROBOT_STATE_PORT
 static void robot_state_client_connected_cb(uv_connect_t* connection_request, int status)
 {
-  UrRobotStateClient *rs_client = (UrRobotStateClient*) connection_request->data;
+  UrRobotStateClient *rs_client = reinterpret_cast<UrRobotStateClient*>(connection_request->data);
   ROS_ASSERT(0 == status);
   ROS_ASSERT(connection_request == &rs_client->connection_request_);
 
-  rs_client->buffer_.base = (char*)malloc(2*sizeof(ur_robot_state));
+  rs_client->buffer_.base = reinterpret_cast<char*>(malloc(2*sizeof(ur_robot_state)));
   rs_client->buffer_.len  = 2*sizeof(ur_robot_state);
 
   status = uv_read_start(connection_request->handle,
@@ -184,8 +184,8 @@ void UrRobotStateClient::start()
   ROS_ASSERT(ur_->robot_address_);
   ROS_ASSERT(ur_->host_address_);
 
-  tcp_stream_.data         = (void*) this;
-  connection_request_.data = (void*) this;
+  tcp_stream_.data         = reinterpret_cast<void*>(this);
+  connection_request_.data = reinterpret_cast<void*>(this);
 
   pthread_mutex_init(&ur_->robot_state_mutex_, NULL);
 
@@ -205,7 +205,7 @@ void UrRobotStateClient::start()
 void UrRobotStateClient::stop()
 {
   pthread_mutex_destroy(&ur_->robot_state_mutex_);
-  uv_close((uv_handle_t*)&tcp_stream_, NULL);
+  uv_close(reinterpret_cast<uv_handle_t*>(&tcp_stream_), NULL);
   free(buffer_.base);
   ur_->ctrl_server_->stop();
 }

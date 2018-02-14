@@ -53,7 +53,7 @@ static uv_buf_t allocate_response_buffer(uv_handle_t* command_stream, size_t)
   ROS_ASSERT(command_stream);
   ROS_ASSERT(command_stream->data);
 
-  UrControlServer *ctrl_server = (UrControlServer*)command_stream->data;
+  UrControlServer *ctrl_server = reinterpret_cast<UrControlServer*>(command_stream->data);
   return ctrl_server->response_buffer_;
 }
 
@@ -72,9 +72,9 @@ static void servo_command_sent_cb(uv_write_t* write_request, int status)
   ROS_ASSERT(0 == status);
   ROS_ASSERT(write_request);
   // protect with mutex the decrement of the pool size
-  pthread_mutex_lock(&((UrControlServer*)write_request->data)->ur_->write_mutex_);
-  ((UrControlServer*)write_request->data)->write_request_pool_.dec();
-  pthread_mutex_unlock(&((UrControlServer*)write_request->data)->ur_->write_mutex_);
+  pthread_mutex_lock(&(reinterpret_cast<UrControlServer*>(write_request->data))->ur_->write_mutex_);
+  (reinterpret_cast<UrControlServer*>(write_request->data))->write_request_pool_.dec();
+  pthread_mutex_unlock(&(reinterpret_cast<UrControlServer*>(write_request->data))->ur_->write_mutex_);
 }
 
 // Called when the robot replies to a command that was sent earlier from the server to the host
@@ -85,7 +85,7 @@ static void received_response_cb(uv_stream_t* command_stream,
   ROS_ASSERT(command_stream);
   ROS_ASSERT(command_stream->data);
 
-  UrControlServer *ctrl_server = (UrControlServer*)command_stream->data;
+  UrControlServer *ctrl_server = reinterpret_cast<UrControlServer*>(command_stream->data);
   ROS_ASSERT(command_stream == (uv_stream_t*)&ctrl_server->command_stream_);
   ROS_ASSERT(buffer.base);
 
@@ -135,8 +135,8 @@ static void received_response_cb(uv_stream_t* command_stream,
 static void received_connection_cb(uv_stream_t* server_stream, int status)
 {
   ROS_ASSERT(server_stream);
-  UrControlServer *ctrl_server = (UrControlServer*)server_stream->data;
-  ROS_ASSERT(server_stream == (uv_stream_t* )&ctrl_server->server_stream_);
+  UrControlServer *ctrl_server = reinterpret_cast<UrControlServer*>(server_stream->data);
+  ROS_ASSERT(server_stream == (uv_stream_t*)&ctrl_server->server_stream_);
 
   ROS_INFO("Received connection from %s robot", ctrl_server->ur_->robot_side_);
 
@@ -144,10 +144,10 @@ static void received_connection_cb(uv_stream_t* server_stream, int status)
   ROS_ASSERT(0 == status);
   uv_tcp_nodelay(&ctrl_server->command_stream_, 0);
 
-  status = uv_accept(server_stream, (uv_stream_t*)&ctrl_server->command_stream_);
+  status = uv_accept(server_stream, reinterpret_cast<uv_stream_t*>(&ctrl_server->command_stream_));
   ROS_ASSERT(0 == status);
 
-  status = uv_read_start((uv_stream_t*)&ctrl_server->command_stream_,
+  status = uv_read_start(reinterpret_cast<uv_stream_t*>(&ctrl_server->command_stream_),
                          allocate_response_buffer,
                          received_response_cb);
   ROS_ASSERT(0 == status);
@@ -161,7 +161,7 @@ static void received_connection_cb(uv_stream_t* server_stream, int status)
 // uv_async_send is the only thread safe libuv call
 static void send_servo_command_async_cb(uv_async_t* handle, int status)
 {
-  UrControlServer *ctrl_server = (UrControlServer*)handle->data;
+  UrControlServer *ctrl_server = reinterpret_cast<UrControlServer*>(handle->data);
   ROS_ASSERT(ctrl_server->ur_);
 
   if (ctrl_server->write_request_pool_.is_full())
@@ -170,7 +170,7 @@ static void send_servo_command_async_cb(uv_async_t* handle, int status)
     return;
   }
 
-  ur_servoj *telegram = (ur_servoj*)ctrl_server->command_buffer_.base;
+  ur_servoj *telegram = reinterpret_cast<ur_servoj*>(ctrl_server->command_buffer_.base);
   memset(telegram, 0, sizeof(ur_servoj));
   telegram->message_type_ = htonl(MSG_SERVOJ);
 
@@ -181,8 +181,9 @@ static void send_servo_command_async_cb(uv_async_t* handle, int status)
         htonl((int32_t)(MULT_JOINTSTATE * ctrl_server->ur_->target_positions_[i]));
   }
 
-  int write_status = uv_write(&(ctrl_server->write_request_pool_.write_request_[ctrl_server->write_request_pool_.next_]),
-                        (uv_stream_t*)&ctrl_server->command_stream_,
+  int write_status = uv_write(&
+    (ctrl_server->write_request_pool_.write_request_[ctrl_server->write_request_pool_.next_]),
+                        reinterpret_cast<uv_stream_t*>(&ctrl_server->command_stream_),
                         &ctrl_server->command_buffer_,
                         1,
                         servo_command_sent_cb);
@@ -212,38 +213,38 @@ void UrControlServer::start()
 
   // get the port that the OS assigned
   sockaddr address_with_bound_port;
-  int length = (int)sizeof(sockaddr);
+  int length = static_cast<int>(sizeof(sockaddr));
   status = uv_tcp_getsockname(&server_stream_, &address_with_bound_port, &length);
   ROS_ASSERT(0 == status);
   int reverse_port = ntohs(((struct sockaddr_in*)&address_with_bound_port)->sin_port);
 
-  server_stream_.data   = (void*)this;
-  command_stream_.data  = (void*)this;
-  write_request_.data   = (void*)this;
-  teach_command_write_request_.data = (void*)this;
-  payload_command_write_request_.data = (void*)this;
-  speed_command_write_request_.data = (void*)this;
-  write_request_pool_.init((void*)this);
+  server_stream_.data   = reinterpret_cast<void*>(this);
+  command_stream_.data  = reinterpret_cast<void*>(this);
+  write_request_.data   = reinterpret_cast<void*>(this);
+  teach_command_write_request_.data = reinterpret_cast<void*>(this);
+  payload_command_write_request_.data = reinterpret_cast<void*>(this);
+  speed_command_write_request_.data = reinterpret_cast<void*>(this);
+  write_request_pool_.init(reinterpret_cast<void*>(this));
 
-  command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  command_buffer_.base  = reinterpret_cast<char*>(malloc(sizeof(ur_servoj)));
   command_buffer_.len   = sizeof(ur_servoj);
-  response_buffer_.base = (char*)malloc(RESPONSE_SIZE);
+  response_buffer_.base = reinterpret_cast<char*>(malloc(RESPONSE_SIZE));
   response_buffer_.len  = RESPONSE_SIZE - 1;
   // IMPORTANT: we allocate the same number of bytes even if ur_set_teach_mode is smaller
   // the reason is that the ur_robot_program expects messages of a unique size (7 bytes)
-  teach_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  teach_command_buffer_.base  = reinterpret_cast<char*>(malloc(sizeof(ur_servoj)));
   teach_command_buffer_.len   = sizeof(ur_servoj);
-  payload_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  payload_command_buffer_.base  = reinterpret_cast<char*>(malloc(sizeof(ur_servoj)));
   payload_command_buffer_.len   = sizeof(ur_servoj);
-  speed_command_buffer_.base  = (char*)malloc(sizeof(ur_servoj));
+  speed_command_buffer_.base  = reinterpret_cast<char*>(malloc(sizeof(ur_servoj)));
   speed_command_buffer_.len   = sizeof(ur_servoj);
 
-  status = uv_listen((uv_stream_t*)&server_stream_, 1, received_connection_cb);
+  status = uv_listen(reinterpret_cast<uv_stream_t*>(&server_stream_), 1, received_connection_cb);
   ROS_ASSERT(0 == status);
   ROS_WARN("UrArmController of %s robot started server on address %s and listening on port %d",
            ur_->robot_side_, ur_->host_address_, reverse_port);
 
-  async_.data = (void*)this;
+  async_.data = reinterpret_cast<void*>(this);
   uv_async_init(ur_->el_->get_event_loop(), &async_, send_servo_command_async_cb);
 
   // after the robot program is loaded and has started running
@@ -262,8 +263,8 @@ void UrControlServer::stop()
 
   pthread_mutex_destroy(&ur_->write_mutex_);
 
-  uv_close((uv_handle_t*)&server_stream_, NULL);
-  uv_close((uv_handle_t*)&command_stream_, NULL);
+  uv_close(reinterpret_cast<uv_handle_t*>(&server_stream_), NULL);
+  uv_close(reinterpret_cast<uv_handle_t*>(&command_stream_), NULL);
 
   ur_->el_->stop();
 
@@ -283,17 +284,16 @@ void UrControlServer::send_message(int32_t ur_msg_type)
 {
   ROS_ASSERT(ur_);
 
-  ur_servoj *telegram = (ur_servoj*)command_buffer_.base;
+  ur_servoj *telegram = reinterpret_cast<ur_servoj*>(command_buffer_.base);
   memset(telegram, 0, sizeof(ur_servoj));
   telegram->message_type_ = htonl(ur_msg_type);
 
   int status = uv_write(&write_request_,
-                        (uv_stream_t*)&command_stream_,
+                        reinterpret_cast<uv_stream_t*>(&command_stream_),
                         &command_buffer_,
                         1,
                         command_sent_cb);
   ROS_ASSERT(0 == status);
-
 }
 
 void UrControlServer::send_teach_mode_command(int32_t teach_mode)
@@ -302,18 +302,17 @@ void UrControlServer::send_teach_mode_command(int32_t teach_mode)
 
   ROS_WARN("Set %s robot teach_mode = %d", ur_->robot_side_, teach_mode);
 
-  ur_set_teach_mode *telegram = (ur_set_teach_mode*)teach_command_buffer_.base;
-  //We are using a different uv_buf_t than the one used for servoj,
+  ur_set_teach_mode *telegram = reinterpret_cast<ur_set_teach_mode*>(teach_command_buffer_.base);
+  // We are using a different uv_buf_t than the one used for servoj,
   memset(telegram, 0, teach_command_buffer_.len);
   telegram->message_type_ = htonl(MSG_SET_TEACH_MODE);
   telegram->teach_mode_ = teach_mode;
   int status = uv_write(&teach_command_write_request_,
-                        (uv_stream_t*)&command_stream_,
+                        reinterpret_cast<uv_stream_t*>(&command_stream_),
                         &teach_command_buffer_,
                         1,
                         command_sent_cb);
   ROS_ASSERT(0 == status);
-
 }
 
 void UrControlServer::send_payload_command()
@@ -326,16 +325,16 @@ void UrControlServer::send_payload_command()
            ur_->payload_center_of_mass_mm_[1],
            ur_->payload_center_of_mass_mm_[2]);
 
-  ur_set_payload *telegram = (ur_set_payload*)payload_command_buffer_.base;
+  ur_set_payload *telegram = reinterpret_cast<ur_set_payload*>(payload_command_buffer_.base);
   memset(telegram, 0, payload_command_buffer_.len);
   telegram->message_type_ = htonl(MSG_SET_PAYLOAD);
   telegram->payload_mass_g_ = htonl(ur_->payload_mass_g_);
-  for (int i=0; i<3; i++)
+  for (int i = 0; i < 3; i++)
   {
     telegram->payload_coords_mm_[i] = htonl(ur_->payload_center_of_mass_mm_[i]);
   }
   int status = uv_write(&payload_command_write_request_,
-                        (uv_stream_t*)&command_stream_,
+                        reinterpret_cast<uv_stream_t*>(&command_stream_),
                         &payload_command_buffer_,
                         1,
                         command_sent_cb);
@@ -349,12 +348,12 @@ void UrControlServer::send_speed_command()
   ROS_WARN("Set %s robot speed = %d/1000", ur_->robot_side_,
            ur_->speed_);
 
-  ur_set_speed *telegram = (ur_set_speed*)speed_command_buffer_.base;
+  ur_set_speed *telegram = reinterpret_cast<ur_set_speed*>(speed_command_buffer_.base);
   memset(telegram, 0, speed_command_buffer_.len);
   telegram->message_type_ = htonl(MSG_SET_SPEED);
   telegram->speed_ = htonl(ur_->speed_);
   int status = uv_write(&speed_command_write_request_,
-                        (uv_stream_t*)&command_stream_,
+                        reinterpret_cast<uv_stream_t*>(&command_stream_),
                         &speed_command_buffer_,
                         1,
                         command_sent_cb);

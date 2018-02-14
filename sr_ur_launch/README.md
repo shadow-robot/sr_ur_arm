@@ -135,6 +135,7 @@ robot_description:=`rospack find sr_multi_description`/urdf/right_srhand_ur10_jo
 ## Bimanual system
 ![](https://raw.githubusercontent.com/shadow-robot/sr_interface/indigo-devel/images/bimanual.png)
 
+
 ### Simulation
 To start the simulation of a bimanual system, you can run:
 
