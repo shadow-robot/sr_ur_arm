@@ -38,12 +38,15 @@ const float MAX_SPEED = 1.0;
 
 // it is expected that joints with this name are configured in the urdf
 // for bimanual systems a prefix may be added
-const char ur_joints[NUM_OF_JOINTS][sizeof("shoulder_lift_joint")] = {"shoulder_pan_joint",
-                                                                      "shoulder_lift_joint",
-                                                                      "elbow_joint",
-                                                                      "wrist_1_joint",
-                                                                      "wrist_2_joint",
-                                                                      "wrist_3_joint"};
+const char ur_joints[NUM_OF_JOINTS][sizeof("shoulder_lift_joint")] = 
+{
+  "shoulder_pan_joint",
+  "shoulder_lift_joint",
+  "elbow_joint",
+  "wrist_1_joint",
+  "wrist_2_joint",
+  "wrist_3_joint"
+};
 
 const int UR_PERIOD = 8;  // msec
 
