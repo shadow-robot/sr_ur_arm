@@ -147,7 +147,7 @@ struct __attribute__((packed)) ur_robot_state_v3_2
 };
 
 // the contents of the telegram from the ur arm controller to the control PC
-// This is valid for version 3.5 to 3.? of the arm controller SW
+// This is valid for version 3.5, 3.6, 3.? of the arm controller SW
 struct __attribute__((packed)) ur_robot_state_v3_5
 {
   int32_t message_size_;
