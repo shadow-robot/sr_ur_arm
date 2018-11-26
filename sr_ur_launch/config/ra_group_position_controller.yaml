@@ -7,3 +7,7 @@ ra_group_position_controller:
     - ra_wrist_1_joint
     - ra_wrist_2_joint
     - ra_wrist_3_joint
+
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 100
