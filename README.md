@@ -1,6 +1,9 @@
 sr_ur_arm
 ---------
 
+This node contains ROS drivers for the UR10, UR5 and UR3 robots from Universal Robots, and is compatible with ros_control and CombinedRobotHW (links?). It is independent of shadow robot hands and so can be used as an arm driver only. 
+
+
 sr_ur_arm  controls a robot system made up from a Shadow Dexterous Hand and a Universal Robots (UR) arm. This requires a special control structure because the UR arm expects position control commands over TCP/IP at 125Hz, and the Shadow Hand expects output over EtherCAT from a 1kHz control loop.
 
 The controller for a UR model CB3 arm (6DOF) is provided as a plugin according to the ros_control architecture.
@@ -19,7 +22,7 @@ Connect with the socket to a server at the robot e.g. ("192.168.0.1", 30002). Th
 open a robot program file send it through the socket
 
 ### sr_ur_event_loop
-Create and run the event loop in a thread with real time priority. 
+Create and run the event loop in a thread with real time priority.
 
 ### sr_ur_read_write
 Accept a connection from a client in the robot and then send position commands and check response
