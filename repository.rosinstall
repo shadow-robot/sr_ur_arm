@@ -1,11 +1,11 @@
 - git:
-    uri: 'https://github.com/shadow-robot/ros_ethercat'
+    uri: https://github.com/shadow-robot/ros_ethercat.git
     version: 'kinetic-devel'
     local-name: ros_ethercat
 
 - git:
     local-name: universal_robot
-    uri: https://github.com/shadow-robot/universal_robot
+    uri: https://github.com/shadow-robot/universal_robot.git
     version: F_elbow_limits
 
 - git:
@@ -15,5 +15,5 @@
 
 - git:
     local-name: ros_control_robot
-    uri: https://github.com/shadow-robot/ros_control_robot/
+    uri: https://github.com/shadow-robot/ros_control_robot.git
     version: kinetic-devel
