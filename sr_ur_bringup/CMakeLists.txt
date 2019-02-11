@@ -7,10 +7,6 @@ catkin_package(
     CATKIN_DEPENDS
 )
 
-install(DIRECTORY launch/
-   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-)
-
 install(DIRECTORY robot_programs/
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/robot_programs
 )
