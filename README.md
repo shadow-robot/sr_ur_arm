@@ -4,7 +4,7 @@
 
 Communication with the UR arm by TCP/IP is handled asynchronously by `libuv`. The control loop in `ros_ethercat` keeps UR arm's controller updated every 8ms. The controller for a UR model CB3 arm (6DOF) is provided as a plugin according to the `ros_control` architecture.
 
-`sr_ur_arm` depends on Shadow's [fork](https://github.com/shadow-robot/universal_robot.git) of the `ros_industrial` drivers for UR, for things like the URDF description of the UR robot or Shadow Hand drivers for ROS. It is also compatible with [ros_control](https://github.com/ros-controls/ros_control) and and uses generic [ros_control_robot](https://github.com/shadow-robot/ros_control_robot) multi-robot ros_control loop.
+`sr_ur_arm` depends on Shadow's [fork](https://github.com/shadow-robot/universal_robot.git) of the `ros_industrial` drivers for UR, for things like the URDF description of the UR robot. It is also compatible with [ros_control](https://github.com/ros-controls/ros_control) and and uses generic [ros_control_robot](https://github.com/shadow-robot/ros_control_robot) multi-robot ros_control loop.
 
 There are multiple parameters that contribute to proper control of an UR manipulator:
 * robot description - xacro files for UR robot. Examples used within this repository can be found [here](https://github.com/shadow-robot/sr_ur_arm/tree/kinetic-devel/sr_ur_launch/description),
