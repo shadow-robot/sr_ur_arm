@@ -4,7 +4,7 @@
 
 Communication with the UR arm by TCP/IP is handled asynchronously by `libuv`. The control loop in `ros_ethercat` keeps UR arm's controller updated every 8ms. The controller for a UR model CB3 arm (6DOF) is provided as a plugin according to the `ros_control` architecture.
 
-`sr_ur_arm` depends on Shadow's [fork](https://github.com/shadow-robot/universal_robot.git) of the `ros_industrial` drivers for UR, for things like the URDF description of the UR robot. It is also compatible with [ros_control](https://github.com/ros-controls/ros_control) and and uses generic [ros_control_robot](https://github.com/shadow-robot/ros_control_robot) multi-robot ros_control loop.
+`sr_ur_arm` depends on Shadow's [fork](https://github.com/shadow-robot/universal_robot.git) of the `ros_industrial` drivers for UR, for things like the URDF description of the UR robot. It is also compatible with [ros_control](https://github.com/ros-controls/ros_control) and uses generic [ros_control_robot](https://github.com/shadow-robot/ros_control_robot) multi-robot ros_control loop.
 
 There are multiple parameters that contribute to proper control of an UR manipulator:
 * robot description - xacro files for UR robot. Examples used within this repository can be found [here](https://github.com/shadow-robot/sr_ur_arm/tree/kinetic-devel/sr_ur_launch/description),
@@ -20,6 +20,8 @@ Nodes that take part in the control process:
 Additionally, `robot_state_publisher` can be used for advertising arm state.
 
 All of the above put together in a functional example launch files for a UR10 robot can be found [here](https://github.com/shadow-robot/sr_ur_arm/tree/kinetic-devel/sr_ur_launch/launch).
+
+`sr_ur_arm` is also compatible with `combined_robot_hw` for control of multiple robots within one control loop. Please look at [this file](./combined_hardware.md) for more info.
 
 ## sr_ur_robot_hw package overview
 
