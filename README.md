@@ -2,8 +2,6 @@
 
 `sr_ur_arm` contains code allowing control of Universal Robots (UR) arms. UR10, UR5 and UR3 are all supported by this package.
 
-## Running arm driver
-
 Communication with the UR arm by TCP/IP is handled asynchronously by `libuv`. The control loop in `ros_ethercat` keeps UR arm's controller updated every 8ms. The controller for a UR model CB3 arm (6DOF) is provided as a plugin according to the `ros_control` architecture.
 
 `sr_ur_arm` depends on Shadow's [fork](https://github.com/shadow-robot/universal_robot.git) of the `ros_industrial` drivers for UR, for things like the URDF description of the UR robot or Shadow Hand drivers for ROS. It is also compatible with [ros_control](https://github.com/ros-controls/ros_control) and and uses generic [ros_control_robot](https://github.com/shadow-robot/ros_control_robot) multi-robot ros_control loop.
