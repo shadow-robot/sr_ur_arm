@@ -14,7 +14,7 @@ There are multiple parameters that contribute to proper control of an UR manipul
 
 Nodes that take part in the control process:
 * `ros_control_robot` - control loop, implemented [here](https://github.com/shadow-robot/ros_control_robot),
-* `joint_state_controller_spawner` - spawning of joint state control, using `controller_manager` package.,
+* `joint_state_controller_spawner` - spawning of joint state control, using `controller_manager` package,
 * `arm_controller_spawner`  - spawning of arm control, using `controller_manager` package.
 
 Additionally, `robot_state_publisher` can be used for advertising arm state.
