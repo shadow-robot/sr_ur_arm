@@ -11,7 +11,7 @@
   <rosparam command="load" file="$(find sr_ur_robot_hw)/config/la_sr_ur_robot_hw.yaml"/>
   <rosparam command="load" file="$(find sr_ur_launch)/config/la_trajectory_controller.yaml"/>
 
-  <param name="ra_sr_ur_robot_hw/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>
+  <param name="la_sr_ur_robot_hw/robot_program_path" type="str" value="$(find sr_ur_bringup)/robot_programs/"/>
 
   <node if="$(arg debug)" name="ur_arm_robot" pkg="ros_control_robot" type="ros_control_robot" args="" output="screen" launch-prefix="gdb -ex run -args"/>
   <node unless="$(arg debug)" name="ur_arm_robot" pkg="ros_control_robot" type="ros_control_robot" args="" output="screen" launch-prefix="ethercat_grant"/>
