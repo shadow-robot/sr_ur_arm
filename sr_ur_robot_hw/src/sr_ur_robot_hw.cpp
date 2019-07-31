@@ -26,6 +26,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <std_msgs/Float64MultiArray.h>
 #include "sr_ur_robot_hw/sr_ur_robot_hw.hpp"
+#include "sr_ur_robot_hw/sr_ur_robot_state_client.hpp"
 
 #include <string>
 #include <vector>
@@ -164,7 +165,7 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
       }
     }
     pthread_mutex_unlock(&ur_.robot_state_mutex_);
-    if (first_read_)
+    if (ur_.rs_client_->robot_state_received && first_read_)
     {
       arms_ready_pub_.publish(true);
       first_read_ = false;
