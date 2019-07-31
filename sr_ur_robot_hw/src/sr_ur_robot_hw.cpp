@@ -29,13 +29,14 @@
 
 #include <string>
 #include <vector>
+#include "std_msgs/Bool.h"
 
 PLUGINLIB_EXPORT_CLASS(sr_ur_robot_hw::UrArmRobotHW, hardware_interface::RobotHW)
 
 namespace sr_ur_robot_hw
 {
 UrArmRobotHW::UrArmRobotHW() :
-    loop_count_(0), ur_(), teach_mode_(false)
+    loop_count_(0), first_read_(0), ur_(), teach_mode_(false)
 {
 }
 
@@ -137,6 +138,8 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   // set_speed_server_ = node_.advertiseService("set_speed", &UrArmRobotHW::setSpeed, this);
   ur_.start();
 
+  arms_ready_pub_ = n.advertise<std_msgs::Bool>("arms_ready", 1, true);
+
   return true;
 }
 
@@ -161,7 +164,13 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
       }
     }
     pthread_mutex_unlock(&ur_.robot_state_mutex_);
+    if (first_read_ == 0)
+    {
+      arms_ready_pub_.publish(true);
+      first_read_ = 1;
+    }
   }
+
 }
 
 void UrArmRobotHW::write(const ros::Time& time, const ros::Duration& period)

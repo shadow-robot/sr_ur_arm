@@ -54,6 +54,7 @@ protected:
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::PositionJointInterface position_joint_interface_;
 
+  ros::Publisher arms_ready_pub_;
 
   std::vector<double> joint_position_command_;
   std::vector<double> joint_position_;
@@ -62,6 +63,9 @@ protected:
 
   // used for throttling loop at 8ms with master loop at 1ms
   int loop_count_;
+
+  // used to flag first read, for to signal ready to load trajectory_controller
+  int first_read_;
 
   // identify left or right arm
   std::string robot_id_;
