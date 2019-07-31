@@ -36,7 +36,7 @@ PLUGINLIB_EXPORT_CLASS(sr_ur_robot_hw::UrArmRobotHW, hardware_interface::RobotHW
 namespace sr_ur_robot_hw
 {
 UrArmRobotHW::UrArmRobotHW() :
-    loop_count_(0), first_read_(0), ur_(), teach_mode_(false)
+    loop_count_(0), first_read_(true), ur_(), teach_mode_(false)
 {
 }
 
@@ -164,10 +164,10 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
       }
     }
     pthread_mutex_unlock(&ur_.robot_state_mutex_);
-    if (first_read_ == 0)
+    if (first_read_)
     {
       arms_ready_pub_.publish(true);
-      first_read_ = 1;
+      first_read_ = false;
     }
   }
 

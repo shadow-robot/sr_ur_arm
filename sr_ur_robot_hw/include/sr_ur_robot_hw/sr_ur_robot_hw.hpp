@@ -65,7 +65,7 @@ protected:
   int loop_count_;
 
   // used to flag first read, for to signal ready to load trajectory_controller
-  int first_read_;
+  bool first_read_;
 
   // identify left or right arm
   std::string robot_id_;
