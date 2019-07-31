@@ -139,7 +139,8 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   // set_speed_server_ = node_.advertiseService("set_speed", &UrArmRobotHW::setSpeed, this);
   ur_.start();
 
-  arms_ready_pub_ = n.advertise<std_msgs::Bool>(robot_id_ + "_arm_ready", 1, true);
+  latch_on = true;
+  arms_ready_pub_ = n.advertise<std_msgs::Bool>(robot_id_ + "_arm_ready", 1, latch_on);
 
   return true;
 }

@@ -55,6 +55,7 @@ protected:
   hardware_interface::PositionJointInterface position_joint_interface_;
 
   ros::Publisher arms_ready_pub_;
+  bool latch_on;
 
   std::vector<double> joint_position_command_;
   std::vector<double> joint_position_;
