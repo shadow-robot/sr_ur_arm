@@ -35,6 +35,7 @@
 #include <sr_ur_msgs/SetSpeed.h>
 #include <string>
 #include <vector>
+#include "std_msgs/Bool.h"
 
 namespace sr_ur_robot_hw
 {
@@ -56,6 +57,7 @@ protected:
 
   ros::Publisher arms_ready_pub_;
   bool latch_on;
+  std_msgs::Bool arm_message;
 
   std::vector<double> joint_position_command_;
   std::vector<double> joint_position_;

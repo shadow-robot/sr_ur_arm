@@ -168,7 +168,8 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
     pthread_mutex_unlock(&ur_.robot_state_mutex_);
     if (ur_.rs_client_->robot_state_received && first_read_)
     {
-      arms_ready_pub_.publish(true);
+      arm_message.data = true;
+      arms_ready_pub_.publish(arm_message);
       first_read_ = false;
     }
   }
