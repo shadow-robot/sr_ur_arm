@@ -55,9 +55,10 @@ protected:
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::PositionJointInterface position_joint_interface_;
 
+  // publisher for message to signal arm driver loaded and receiving position data
   ros::Publisher arms_ready_pub_;
-  bool latch_on;
-  std_msgs::Bool arm_message;
+  bool latch_on_;
+  std_msgs::Bool arm_message_;
 
   std::vector<double> joint_position_command_;
   std::vector<double> joint_position_;

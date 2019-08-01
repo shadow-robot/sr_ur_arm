@@ -138,8 +138,8 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   // set_speed_server_ = node_.advertiseService("set_speed", &UrArmRobotHW::setSpeed, this);
   ur_.start();
 
-  latch_on = true;
-  arms_ready_pub_ = n.advertise<std_msgs::Bool>(robot_id_ + "_arm_ready", 1, latch_on);
+  latch_on_ = true;
+  arms_ready_pub_ = n.advertise<std_msgs::Bool>(robot_id_ + "_arm_ready", 1, latch_on_);
 
   return true;
 }
@@ -167,8 +167,8 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
     pthread_mutex_unlock(&ur_.robot_state_mutex_);
     if (ur_.rs_client_->robot_state_received && first_read_)
     {
-      arm_message.data = true;
-      arms_ready_pub_.publish(arm_message);
+      arm_message_.data = true;
+      arms_ready_pub_.publish(arm_message_);
       first_read_ = false;
     }
   }
