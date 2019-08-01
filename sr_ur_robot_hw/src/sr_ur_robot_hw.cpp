@@ -30,7 +30,6 @@
 
 #include <string>
 #include <vector>
-#include "std_msgs/Bool.h"
 
 PLUGINLIB_EXPORT_CLASS(sr_ur_robot_hw::UrArmRobotHW, hardware_interface::RobotHW)
 
@@ -173,7 +172,6 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
       first_read_ = false;
     }
   }
-
 }
 
 void UrArmRobotHW::write(const ros::Time& time, const ros::Duration& period)
