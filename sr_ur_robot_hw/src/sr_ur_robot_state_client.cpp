@@ -97,6 +97,12 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
       rs_client->protocol_version = "3.5";
       pdata = buffer.base;
     }
+    else if (sizeof(ur_robot_state_v3_10) == number_of_chars_received)
+    {
+      ROS_WARN_STREAM("UR robot state protocol v3.10");
+      rs_client->protocol_version = "3.10";
+      pdata = buffer.base;
+    }
     else
     {
       ROS_ERROR_STREAM("UR robot state protocol unknown version");
@@ -150,8 +156,24 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
       return;
     }
   }
+  else if (rs_client->protocol_version == "3.10")
+  {
+    if (sizeof(ur_robot_state_v3_10) == number_of_chars_received)
+    {
+      pdata = buffer.base;
+    }
+    else if (sizeof(ur_short_robot_state) + sizeof(ur_robot_state_v3_10) <= number_of_chars_received)
+    {
+      pdata = buffer.base + sizeof(ur_robot_state_v3_10);
+    }
+    else
+    {
+      pthread_mutex_unlock(&rs_client->ur_->robot_state_mutex_);
+      return;
+    }
+  }
 
-  ur_robot_state_v3_5 *robot_state = reinterpret_cast<ur_robot_state_v3_5*>(pdata);
+  ur_robot_state_v3_10 *robot_state = reinterpret_cast<ur_robot_state_v3_10*>(pdata);
 
   // the range of motion of each robot joint is 2 full rotations
   // if a value is reported outside these limits it's a communication error
@@ -194,9 +216,9 @@ static void robot_state_client_connected_cb(uv_connect_t* connection_request, in
   ROS_ASSERT(0 == status);
   ROS_ASSERT(connection_request == &rs_client->connection_request_);
 
-  // Use the longest structure to allocate memory (ur_robot_state_v3_5)
-  rs_client->buffer_.base = reinterpret_cast<char*>(malloc(2*sizeof(ur_robot_state_v3_5)));
-  rs_client->buffer_.len  = 2*sizeof(ur_robot_state_v3_5);
+  // Use the longest structure to allocate memory (ur_robot_state_v3_10)
+  rs_client->buffer_.base = reinterpret_cast<char*>(malloc(2*sizeof(ur_robot_state_v3_10)));
+  rs_client->buffer_.len  = 2*sizeof(ur_robot_state_v3_10);
 
   status = uv_read_start(connection_request->handle,
                          allocate_robot_state_buffer,
