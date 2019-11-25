@@ -45,7 +45,7 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
 
   if (node_.getParam("robot_id", robot_id_) && (!robot_id_.empty()))
   {
-    joint_prefix_ = robot_id_ + '_';
+    joint_prefix_ = robot_id_;
   }
 
   joint_position_command_.resize(NUM_OF_JOINTS);
@@ -138,7 +138,7 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   ur_.start();
 
   latch_on_ = true;
-  arms_ready_pub_ = n.advertise<std_msgs::Bool>(robot_id_ + "_arm_ready", 1, latch_on_);
+  arms_ready_pub_ = n.advertise<std_msgs::Bool>(robot_id_ + "arm_ready", 1, latch_on_);
 
   return true;
 }
