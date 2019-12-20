@@ -1,0 +1,24 @@
+robot_hardware:
+    - ur_hardware_interface
+ur_hardware_interface:
+  type: ur_driver/HardwareInterface
+  
+  # ra for right side arm la for left side arm
+  robot_id: ra
+  
+  # for sending robot programs
+  robot_ip: 192.168.1.1
+  
+  input_recipe_file: /home/user/projects/shadow_robot/base/src/Universal_Robots_ROS_Driver/ur_robot_driver/resources/rtde_input_recipe.txt
+  
+  output_recipe_file: /home/user/projects/shadow_robot/base/src/Universal_Robots_ROS_Driver/ur_robot_driver/resources/rtde_output_recipe.txt
+  
+  script_file: /home/user/projects/shadow_robot/base/src/Universal_Robots_ROS_Driver/ur_robot_driver/resources/servoj.urscript
+  
+  use_tool_communication: false
+  
+  headless_mode: false 
+  
+  # for the server that moves the robot 
+  control_pc_ip_address: 192.168.1.100
+   
