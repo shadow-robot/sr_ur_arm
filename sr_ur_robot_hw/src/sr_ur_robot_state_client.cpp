@@ -1,26 +1,25 @@
 /*
- * Copyright (c) 2014, Shadow Robot Company, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
- */
+* Copyright 2014 Shadow Robot Company Ltd.
+*
+* This program is free software: you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the Free
+* Software Foundation version 2 of the License.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /*
- * sr_ur_read_robot_state.cpp
- *
- *  Created on: 20 Oct 2014
- *      Author: Manos Nikolaidis
- */
+* sr_ur_read_robot_state.cpp
+*
+*  Created on: 20 Oct 2014
+*      Author: Manos Nikolaidis
+*/
 
 #define ROS_ASSERT_ENABLED
 #include <stdio.h>
@@ -98,6 +97,12 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
       rs_client->protocol_version = "3.5";
       pdata = buffer.base;
     }
+    else if (sizeof(ur_robot_state_v3_10) == number_of_chars_received)
+    {
+      ROS_WARN_STREAM("UR robot state protocol v3.10");
+      rs_client->protocol_version = "3.10";
+      pdata = buffer.base;
+    }
     else
     {
       ROS_ERROR_STREAM("UR robot state protocol unknown version");
@@ -151,8 +156,24 @@ static void robot_state_received_cb(uv_stream_t* state_stream,
       return;
     }
   }
+  else if (rs_client->protocol_version == "3.10")
+  {
+    if (sizeof(ur_robot_state_v3_10) == number_of_chars_received)
+    {
+      pdata = buffer.base;
+    }
+    else if (sizeof(ur_short_robot_state) + sizeof(ur_robot_state_v3_10) <= number_of_chars_received)
+    {
+      pdata = buffer.base + sizeof(ur_robot_state_v3_10);
+    }
+    else
+    {
+      pthread_mutex_unlock(&rs_client->ur_->robot_state_mutex_);
+      return;
+    }
+  }
 
-  ur_robot_state_v3_5 *robot_state = reinterpret_cast<ur_robot_state_v3_5*>(pdata);
+  ur_robot_state_v3_10 *robot_state = reinterpret_cast<ur_robot_state_v3_10*>(pdata);
 
   // the range of motion of each robot joint is 2 full rotations
   // if a value is reported outside these limits it's a communication error
@@ -195,9 +216,9 @@ static void robot_state_client_connected_cb(uv_connect_t* connection_request, in
   ROS_ASSERT(0 == status);
   ROS_ASSERT(connection_request == &rs_client->connection_request_);
 
-  // Use the longest structure to allocate memory (ur_robot_state_v3_5)
-  rs_client->buffer_.base = reinterpret_cast<char*>(malloc(2*sizeof(ur_robot_state_v3_5)));
-  rs_client->buffer_.len  = 2*sizeof(ur_robot_state_v3_5);
+  // Use the longest structure to allocate memory (ur_robot_state_v3_10)
+  rs_client->buffer_.base = reinterpret_cast<char*>(malloc(2*sizeof(ur_robot_state_v3_10)));
+  rs_client->buffer_.len  = 2*sizeof(ur_robot_state_v3_10);
 
   status = uv_read_start(connection_request->handle,
                          allocate_robot_state_buffer,

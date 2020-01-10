@@ -1,31 +1,31 @@
 /*
- * Copyright (c) 2014, Shadow Robot Company, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
- */
+* Copyright 2014 Shadow Robot Company Ltd.
+*
+* This program is free software: you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the Free
+* Software Foundation version 2 of the License.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /*
- * sr_ur_robot_hw.cpp
- *
- *  Created on: 20 Oct 2014
- *      Author: Manos Nikolaidis, Dan Greenwald
- */
+* sr_ur_robot_hw.cpp
+*
+*  Created on: 20 Oct 2014
+*      Author: Manos Nikolaidis, Dan Greenwald
+*/
 
 #include <pthread.h>
 #include <pluginlib/class_list_macros.h>
 #include <std_msgs/Float64MultiArray.h>
 #include "sr_ur_robot_hw/sr_ur_robot_hw.hpp"
+#include "sr_ur_robot_hw/sr_ur_robot_state_client.hpp"
 
 #include <string>
 #include <vector>
@@ -35,7 +35,7 @@ PLUGINLIB_EXPORT_CLASS(sr_ur_robot_hw::UrArmRobotHW, hardware_interface::RobotHW
 namespace sr_ur_robot_hw
 {
 UrArmRobotHW::UrArmRobotHW() :
-    loop_count_(0), ur_(), teach_mode_(false)
+    loop_count_(0), first_read_(true), ur_(), teach_mode_(false)
 {
 }
 
@@ -137,6 +137,9 @@ bool UrArmRobotHW::init(ros::NodeHandle &n, ros::NodeHandle &robot_hw_nh)
   // set_speed_server_ = node_.advertiseService("set_speed", &UrArmRobotHW::setSpeed, this);
   ur_.start();
 
+  latch_on_ = true;
+  arms_ready_pub_ = n.advertise<std_msgs::Bool>(robot_id_ + "_arm_ready", 1, latch_on_);
+
   return true;
 }
 
@@ -161,6 +164,12 @@ void UrArmRobotHW::read(const ros::Time& time, const ros::Duration& period)
       }
     }
     pthread_mutex_unlock(&ur_.robot_state_mutex_);
+    if (ur_.rs_client_->robot_state_received && first_read_)
+    {
+      arm_message_.data = true;
+      arms_ready_pub_.publish(arm_message_);
+      first_read_ = false;
+    }
   }
 }
 

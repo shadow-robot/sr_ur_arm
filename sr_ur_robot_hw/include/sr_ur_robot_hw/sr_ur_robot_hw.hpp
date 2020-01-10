@@ -1,26 +1,25 @@
 /*
- * Copyright (c) 2014, Shadow Robot Company, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
- */
+* Copyright 2014 Shadow Robot Company Ltd.
+*
+* This program is free software: you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the Free
+* Software Foundation version 2 of the License.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /*
- * sr_ur_robot_hw.hpp
- *
- *  Created on: 20 Oct 2014
- *      Author: Manos Nikolaidis, Dan Greenwald
- */
+* sr_ur_robot_hw.hpp
+*
+*  Created on: 20 Oct 2014
+*      Author: Manos Nikolaidis, Dan Greenwald
+*/
 
 #ifndef SR_UR_ROBOT_HW_HPP_
 #define SR_UR_ROBOT_HW_HPP_
@@ -35,6 +34,7 @@
 #include <sr_ur_msgs/SetSpeed.h>
 #include <string>
 #include <vector>
+#include "std_msgs/Bool.h"
 
 namespace sr_ur_robot_hw
 {
@@ -54,6 +54,10 @@ protected:
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::PositionJointInterface position_joint_interface_;
 
+  // publisher for message to signal arm driver loaded and receiving position data
+  ros::Publisher arms_ready_pub_;
+  bool latch_on_;
+  std_msgs::Bool arm_message_;
 
   std::vector<double> joint_position_command_;
   std::vector<double> joint_position_;
@@ -62,6 +66,9 @@ protected:
 
   // used for throttling loop at 8ms with master loop at 1ms
   int loop_count_;
+
+  // used to flag first read, for to signal ready to load trajectory_controller
+  bool first_read_;
 
   // identify left or right arm
   std::string robot_id_;
