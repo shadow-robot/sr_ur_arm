@@ -22,7 +22,7 @@ class SrUrPoseMover(object):
         self.switch_controllers = ServiceProxy(
             'controller_manager/switch_controller', SwitchController)
         self.switch_controllers(
-            ['robot_trajectory_controller'], [], SwitchController._request_class.BEST_EFFORT)
+            ['robot_trajectory_controller'], [], False, 0, SwitchController._request_class.BEST_EFFORT)
         self.client = SimpleActionClient(
             'robot_trajectory_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
         self.trajectory_goal = FollowJointTrajectoryGoal()
