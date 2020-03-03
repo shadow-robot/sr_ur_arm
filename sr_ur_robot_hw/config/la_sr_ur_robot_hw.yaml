@@ -1,7 +1,7 @@
 robot_hardware:
     - la_sr_ur_robot_hw
 la_sr_ur_robot_hw:
-  type: sr_ur_robot_hw/UrArmRobotHW
+  type: ur_driver/HardwareInterface
   
   # ra for right side arm la for left side arm
   robot_id: la
