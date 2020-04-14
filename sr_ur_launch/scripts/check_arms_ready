@@ -20,8 +20,9 @@ class ArmChecker(object):
         self.pub = rospy.Publisher('arms_ready', Bool, queue_size=1)
         # Time between checks
         self.loop_time = 2.0
-        # Time after the controllers are running before we signal that the arms are ready for the trajectory controllers (i.e. we assume they've received
-        # valid status
+        # Time after the controllers are running
+        # before we signal that the arms are ready for the trajectory controllers
+        # (i.e. we assume they've received valid status)
         self.safety_time = 4.0
 
     def check_controllers_running(self, controllers):
