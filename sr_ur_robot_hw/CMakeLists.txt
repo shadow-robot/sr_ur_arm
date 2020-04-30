@@ -14,20 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_library(sr_ur_robot_hw
-  src/sr_ur_driver.cpp
-  src/sr_ur_event_loop.cpp
-  src/sr_ur_program_loader.cpp
-  src/sr_ur_control_server.cpp
-  src/sr_ur_robot_hw.cpp
-  src/sr_ur_robot_state_client.cpp
-)
-add_dependencies(sr_ur_robot_hw
-  ${catkin_EXPORTED_TARGETS}
-)
-
-target_link_libraries(sr_ur_robot_hw uv ${catkin_LIBRARIES})
-
 catkin_package(
   CATKIN_DEPENDS
     roscpp
@@ -43,6 +29,20 @@ catkin_package(
   LIBRARIES
     sr_ur_robot_hw
 )
+
+add_library(sr_ur_robot_hw
+  src/sr_ur_driver.cpp
+  src/sr_ur_event_loop.cpp
+  src/sr_ur_program_loader.cpp
+  src/sr_ur_control_server.cpp
+  src/sr_ur_robot_hw.cpp
+  src/sr_ur_robot_state_client.cpp
+)
+add_dependencies(sr_ur_robot_hw
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(sr_ur_robot_hw uv ${catkin_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

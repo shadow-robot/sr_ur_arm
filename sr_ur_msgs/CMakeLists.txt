@@ -52,7 +52,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES sr_ur_msgs
-  CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS message_runtime geometry_msgs
 #  DEPENDS system_lib
 )
 
