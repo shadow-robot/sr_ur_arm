@@ -3,23 +3,28 @@
 # ⛔️ DEPRECATED sr_ur_arm
 ## This is no longer supported, please consider using https://github.com/UniversalRobots/Universal_Robots_ROS_Driver instead
 
-## General Overview
+`sr_ur_arm` contains code allowing control of Universal Robots (UR) arms. UR10, UR5 and UR3 are all supported by this package.
 
-`sr_ur_arm` contains code allowing control of Universal Robots (UR) arms and their combinations with a Shadow Dexterous Hand. UR10, UR5 and UR3 are all supported by this package and can be used with or independently from Shadow Dexterous Hand.
+Communication with the UR arm by TCP/IP is handled asynchronously by `libuv`. The control loop in `ros_ethercat` keeps UR arm's controller updated every 8ms. The controller for a UR model CB3 arm (6DOF) is provided as a plugin according to the `ros_control` architecture.
 
-Combined UR robot and hand system requires a special control structure because the UR arm expects position control commands over TCP/IP at 125Hz, and the Shadow Hand expects output over EtherCAT from a 1kHz control loop.
+`sr_ur_arm` depends on Shadow's [fork](https://github.com/shadow-robot/universal_robot.git) of the `ros_industrial` drivers for UR, for things like the URDF description of the UR robot. It is also compatible with [ros_control](https://github.com/ros-controls/ros_control) and uses generic [ros_control_robot](https://github.com/shadow-robot/ros_control_robot) multi-robot ros_control loop.
 
-Communication with the UR arm by TCP/IP is handled asynchronously by `libuv`. Communication with the Shadow Hand is handled with the standard drivers using EtherCAT and `eml` as the EtherCAT master.
+There are multiple parameters that contribute to proper control of an UR manipulator:
+* robot description - xacro files for UR robot. Examples used within this repository can be found [here](https://github.com/shadow-robot/sr_ur_arm/tree/kinetic-devel/sr_ur_launch/description),
+* robot config - yaml file containing configuration parameters. Examples used within this repository can be found [here](https://github.com/shadow-robot/sr_ur_arm/tree/kinetic-devel/sr_ur_robot_hw/config),
+* trajectory controller config - yaml file containing parameters used by robot's trajectory controller. Example can be found [here](https://github.com/shadow-robot/sr_ur_arm/tree/kinetic-devel/sr_ur_robot_hw/config),
+* robot programs - files containing robot programs. Examples [here](https://github.com/shadow-robot/sr_ur_arm/blob/kinetic-devel/sr_ur_bringup/robot_programs/ur_robot_program).
 
-The control loop in `ros_ethercat` keeps both robots synchronized,  with the hand's controller updated every 1ms and the UR arm's controller updated every 8ms.
+Nodes that take part in the control process:
+* `ros_control_robot` - control loop, implemented [here](https://github.com/shadow-robot/ros_control_robot),
+* `joint_state_controller_spawner` - spawning of joint state control, using `controller_manager` package,
+* `arm_controller_spawner`  - spawning of arm control, using `controller_manager` package.
 
-The controller for a UR model CB3 arm (6DOF) is provided as a plugin according to the `ros_control` architecture.
+Additionally, `robot_state_publisher` can be used for advertising arm state.
 
-This repository is compatible with [ros_control](https://github.com/ros-controls/ros_control) and `CombinedRobotHW` and uses generic [ros_control_robot](https://github.com/shadow-robot/ros_control_robot) multi-robot ros_control loop. Example launch files for a UR10 robot (independent of the Shadow Dexterous Hand) can be found [here](https://github.com/shadow-robot/sr_ur_arm/tree/kinetic-devel/sr_ur_launch/launch).
+All of the above put together in a functional example launch files for a UR10 robot can be found [here](https://github.com/shadow-robot/sr_ur_arm/tree/kinetic-devel/sr_ur_launch/launch).
 
-`sr_ur_arm` depends on Shadow's [fork](https://github.com/shadow-robot/universal_robot.git) of the `ros_industrial` drivers for UR, for things like the URDF description of the UR robot or Shadow Hand drivers for ROS.
-
-This repository has been widely used across many launch files implemented by Shadow. Numerous examples can be found in our [sr_robot_launch](https://github.com/shadow-robot/sr_interface/tree/kinetic-devel/sr_robot_launch) package.
+`sr_ur_arm` is also compatible with `combined_robot_hw` for control of multiple robots within one control loop. Please look at [this file](./combined_hardware.md) for more info.
 
 ## sr_ur_robot_hw package overview
 
