@@ -1,4 +1,7 @@
-# sr_ur_arm
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
+# ⛔️ DEPRECATED sr_ur_arm
+## This is no longer supported, please consider using https://github.com/UniversalRobots/Universal_Robots_ROS_Driver instead
 
 ## General Overview
 
